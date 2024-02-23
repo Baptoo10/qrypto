@@ -1,0 +1,8 @@
+
+
+
+Problème jspu le nom mais en gros si le git push refuse de se faire :
+- mv .git/refs/remotes/origin/main /tmp
+- git gc
+
+Et c'est reparti !
