@@ -1,7 +1,35 @@
+Push ses modifications sur le repo git distant :
+- git add . //ajout de toutes les modifications avec le ".".
+- git commit -m "message explicant brièvement les modifications apportées, ex : 'generation keys for the wallet almost done ; problem with the sk'"
+- git push origin NOM_DE_LA_BRANCHE // ex : git push origin bapt
 
+__________________________________________________________________________________________________________________________________________________________
 
+Changer de branche :
+- git checkout NOM_DE_LA_BRANCHE
+OU
+- git switch NOM_DE_LA_BRANCHE
 
-Problème jspu le nom mais en gros si le git push refuse de se faire :
+__________________________________________________________________________________________________________________________________________________________
+
+Listing des branches :
+- git branch
+
+__________________________________________________________________________________________________________________________________________________________
+
+Si message d'erreur suivant :
+"
+error: Your local changes to the following files would be overwritten by checkout:
+        git_commands.txt
+Please commit your changes or stash them before you switch branches.
+Aborting
+"
+Après la commande : - git switch NOM_DE_LA_BRANCHE
+Cela signifie que vos données modifiées sur la branche courante seront écrasées si vous ne les ajoutez pas au repo.
+
+__________________________________________________________________________________________________________________________________________________________
+
+Problème jspu le nom mais en gros si le git push refuse de se faire (sûrement un problème de déconnexion avec le repo distant) :
 - mv .git/refs/remotes/origin/main /tmp
 - git gc
 
