@@ -1,4 +1,14 @@
-Push ses modifications sur le repo git distant :
+Après acceptation de l'invitation à rejoindre le repo Github, télécharger git bash pour plus de facilité + éviter une potentielle reconnexion au repo distant à chaque lancement, mais aussi possible de tout faire à partir du terminal windows. Ce lien doit être le bon "https://git-scm.com/downloads".
+
+Ajouter le git sur votre machine (choississez un bon emplacement puisqu'il risque d'y avoir pas mal de fichiers + peut être ensuite compliqué à changer d'emplacement à moins de refaire un git clone, ...)
+
+- git clone https://github.com/Baptoo10/qrypto.git
+
+Si demande d'un accès SSH, venir me demander, il faudra générer une clé SSH à partir de Github qu'on enregistrera ensuite dans un dossier spécifique (pour que votre pc soit bien reconnu comme étant celui appartenant au même propriétaire que le compte Github. Peut ainsi éviter de redemander la connexion au terminal git bash à chaque fois qu'un nouveau projet est lancé notamment).
+
+__________________________________________________________________________________________________________________________________________________________
+
+Push ses modifications sur le repo git distant (NE JAMAIS PUSH DE CETTE FACON SUR LA BRANCHE MAIN AU RISQUE DE TOUT PERDRE) :
 - git add . //ajout de toutes les modifications avec le ".".
 - git commit -m "message explicant brièvement les modifications apportées, ex : 'generation keys for the wallet almost done ; problem with the sk'"
 - git push origin NOM_DE_LA_BRANCHE // ex : git push origin bapt
@@ -29,8 +39,26 @@ Cela signifie que vos données modifiées sur la branche courante seront écras�
 
 __________________________________________________________________________________________________________________________________________________________
 
+Récupérer un fichier ou un dossier spécifique d'une branche (ex : je suis sur la branche "bapt" et veux récupérer le dossier "test_recup" de la branche "main") :
+- git checkout bapt // bien se mettre sur la branche sur laquelle on veut ajouter le dossier/le fichier)
+- git checkout main -- blkchn_code_/src/test_recup/     //Path à récupérer directement de Github en se rendant sur le dossier voulu et en copiant le path (bouton permettant d'ajouter le path au clipboard à droite du chemin du dossier).
+
+
+PENSER A PUSH LES MODIFICATIONS SUR SA BRANCHE AVANT DE CHECKOUT/SWITCH POUR EVITER QUE LES MODIFICATIONS NE DISPARAISSENT (possible qu'aucun message d'erreur n'apparaisse)
+
+__________________________________________________________________________________________________________________________________________________________
+
 Problème jspu le nom mais en gros si le git push refuse de se faire (sûrement un problème de déconnexion avec le repo distant) :
 - mv .git/refs/remotes/origin/main /tmp
 - git gc
 
 Et c'est reparti !
+
+__________________________________________________________________________________________________________________________________________________________
+
+Commandes supplémentaires mais qui ne seront probablement pas utilisées :
+- git fetch origin NOM_DE_LA_BRANCHE //Récupération des modifications de la branche "NOM_DE_LA_BRANCHE" sans fusion avec le dépôt local
+- git merge origin NOM_DE_LA_BRANCHE //Fusionne les modification avec le dépôt local
+
+git pull effectue 2 opérations en une : git fetch + git merge
+- git pull origin NOM_DE_LA_BRANCHE //Récupération des modifications de la branche "NOM_DE_LA_BRANCHE" en créant une copie locale sur votre machine.
