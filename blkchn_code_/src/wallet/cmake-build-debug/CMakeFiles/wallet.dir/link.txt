@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/wallet.dir/gen_key.cpp.o -o wallet 

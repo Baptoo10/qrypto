@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="wallet"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="wallet">
+				<Option output="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/wallet" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/."/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 wallet"/>
+					<CompileFile command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="wallet/fast">
+				<Option output="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/wallet" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/."/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 wallet/fast"/>
+					<CompileFile command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j8 -f &quot;/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.cpp">
+			<Option target="wallet"/>
+		</Unit>
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.h">
+			<Option target="wallet"/>
+		</Unit>
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
