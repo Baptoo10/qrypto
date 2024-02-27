@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/wallet.dir/gen_key.cpp.o"
+  "CMakeFiles/wallet.dir/gen_key_libraryso.cpp.o"
   "wallet"
   "wallet.pdb"
 )

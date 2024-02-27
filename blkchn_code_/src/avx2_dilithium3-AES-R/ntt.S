@@ -1,5 +1,5 @@
 #include "consts.h"
-.include "shuffle.inc"
+.include "../avx2_dilithium3-AES-R/shuffle.inc"
 
 .macro butterfly rl0,rl1,rl2,rl3,rh0,rh1,rh2,rh3,z0=3,z1=3,z2=3,z3=3
 #mul

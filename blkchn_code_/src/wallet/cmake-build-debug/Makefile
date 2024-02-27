@@ -142,32 +142,32 @@ wallet/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/build
 .PHONY : wallet/fast
 
-gen_key.o: gen_key.cpp.o
+gen_key_libraryso.o: gen_key_libraryso.cpp.o
 
-.PHONY : gen_key.o
+.PHONY : gen_key_libraryso.o
 
 # target to build an object file
-gen_key.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.cpp.o
-.PHONY : gen_key.cpp.o
+gen_key_libraryso.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.o
+.PHONY : gen_key_libraryso.cpp.o
 
-gen_key.i: gen_key.cpp.i
+gen_key_libraryso.i: gen_key_libraryso.cpp.i
 
-.PHONY : gen_key.i
+.PHONY : gen_key_libraryso.i
 
 # target to preprocess a source file
-gen_key.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.cpp.i
-.PHONY : gen_key.cpp.i
+gen_key_libraryso.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.i
+.PHONY : gen_key_libraryso.cpp.i
 
-gen_key.s: gen_key.cpp.s
+gen_key_libraryso.s: gen_key_libraryso.cpp.s
 
-.PHONY : gen_key.s
+.PHONY : gen_key_libraryso.s
 
 # target to generate assembly for a file
-gen_key.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.cpp.s
-.PHONY : gen_key.cpp.s
+gen_key_libraryso.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.s
+.PHONY : gen_key_libraryso.cpp.s
 
 # Help Target
 help:
@@ -178,9 +178,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... wallet"
-	@echo "... gen_key.o"
-	@echo "... gen_key.i"
-	@echo "... gen_key.s"
+	@echo "... gen_key_libraryso.o"
+	@echo "... gen_key_libraryso.i"
+	@echo "... gen_key_libraryso.s"
 .PHONY : help
 
 
