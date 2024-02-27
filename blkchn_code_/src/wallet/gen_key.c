@@ -9,7 +9,7 @@
 #define CRYPTO_SECRETKEYBYTES 4016
 
 char *showhex(uint8_t a[], int size);
-
+int address();
 char *showhex(uint8_t a[], int size) {
     char *s = (char *)malloc(size * 2 + 1);
 
@@ -33,4 +33,9 @@ int main(void) {
     printf("\nClé privée : %s\n", showhex(sk, CRYPTO_SECRETKEYBYTES));
 
     return 0;
+}
+
+
+int address(){
+
 }

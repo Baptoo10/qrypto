@@ -1,1 +1,1 @@
-/usr/bin/c++ -g CMakeFiles/wallet.dir/gen_key_libraryso.cpp.o -o wallet 
+/usr/bin/c++ -g CMakeFiles/wallet.dir/gen_key.c.o CMakeFiles/wallet.dir/pubkey.cpp.o -o wallet 

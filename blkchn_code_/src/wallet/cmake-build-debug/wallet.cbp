@@ -84,10 +84,16 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key_libraryso.cpp">
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.c">
 			<Option target="wallet"/>
 		</Unit>
-		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key_libraryso.h">
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.h">
+			<Option target="wallet"/>
+		</Unit>
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/pubkey.cpp">
+			<Option target="wallet"/>
+		</Unit>
+		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/pubkey.h">
 			<Option target="wallet"/>
 		</Unit>
 		<Unit filename="/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/CMakeLists.txt">

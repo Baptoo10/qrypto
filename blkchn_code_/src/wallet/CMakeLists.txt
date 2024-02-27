@@ -7,4 +7,6 @@ include_directories(.)
 
 add_executable(wallet
         gen_key.c
-        gen_key.h)
+        gen_key.h
+        pubkey.cpp
+        pubkey.h)

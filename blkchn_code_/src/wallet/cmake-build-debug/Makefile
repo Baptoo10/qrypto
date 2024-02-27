@@ -142,32 +142,59 @@ wallet/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/build
 .PHONY : wallet/fast
 
-gen_key_libraryso.o: gen_key_libraryso.cpp.o
+gen_key.o: gen_key.c.o
 
-.PHONY : gen_key_libraryso.o
+.PHONY : gen_key.o
 
 # target to build an object file
-gen_key_libraryso.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.o
-.PHONY : gen_key_libraryso.cpp.o
+gen_key.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.c.o
+.PHONY : gen_key.c.o
 
-gen_key_libraryso.i: gen_key_libraryso.cpp.i
+gen_key.i: gen_key.c.i
 
-.PHONY : gen_key_libraryso.i
+.PHONY : gen_key.i
 
 # target to preprocess a source file
-gen_key_libraryso.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.i
-.PHONY : gen_key_libraryso.cpp.i
+gen_key.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.c.i
+.PHONY : gen_key.c.i
 
-gen_key_libraryso.s: gen_key_libraryso.cpp.s
+gen_key.s: gen_key.c.s
 
-.PHONY : gen_key_libraryso.s
+.PHONY : gen_key.s
 
 # target to generate assembly for a file
-gen_key_libraryso.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key_libraryso.cpp.s
-.PHONY : gen_key_libraryso.cpp.s
+gen_key.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/gen_key.c.s
+.PHONY : gen_key.c.s
+
+pubkey.o: pubkey.cpp.o
+
+.PHONY : pubkey.o
+
+# target to build an object file
+pubkey.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/pubkey.cpp.o
+.PHONY : pubkey.cpp.o
+
+pubkey.i: pubkey.cpp.i
+
+.PHONY : pubkey.i
+
+# target to preprocess a source file
+pubkey.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/pubkey.cpp.i
+.PHONY : pubkey.cpp.i
+
+pubkey.s: pubkey.cpp.s
+
+.PHONY : pubkey.s
+
+# target to generate assembly for a file
+pubkey.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wallet.dir/build.make CMakeFiles/wallet.dir/pubkey.cpp.s
+.PHONY : pubkey.cpp.s
 
 # Help Target
 help:
@@ -178,9 +205,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... wallet"
-	@echo "... gen_key_libraryso.o"
-	@echo "... gen_key_libraryso.i"
-	@echo "... gen_key_libraryso.s"
+	@echo "... gen_key.o"
+	@echo "... gen_key.i"
+	@echo "... gen_key.s"
+	@echo "... pubkey.o"
+	@echo "... pubkey.i"
+	@echo "... pubkey.s"
 .PHONY : help
 
 

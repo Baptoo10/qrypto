@@ -1,4 +1,4 @@
-CC ?= gcc
+CXX ?= g++
 CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
   -Wshadow -Wpointer-arith -mavx2 -mpopcnt -maes -mbmi2 \
   -march=native -mtune=native -O3
@@ -23,7 +23,7 @@ AES_HEADERS = $(HEADERS) $(REL_PATH)fips202.h $(REL_PATH)aes256ctr.h
 
 gen_key_mode3: gen_key.c $(REL_PATH)randombytes.c $(AES_SOURCES) \
   $(AES_HEADERS)
-	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
+	$(CXX) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
 	  -o $@ $< $(REL_PATH)randombytes.c $(AES_SOURCES)
 
 
