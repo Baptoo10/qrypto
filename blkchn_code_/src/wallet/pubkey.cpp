@@ -1,9 +1,18 @@
 
 #include "pubkey.h"
+
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+extern "C"{
+    #include "gen_key.h"
+}
 
+int main(){
+    gen_keys();
+}
+
+/*
 int main() {
 
     FILE *pipe = popen("./gen_key_mode3", "r");
@@ -30,3 +39,4 @@ int main() {
 
     return 0;
 }
+*/
