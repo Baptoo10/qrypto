@@ -53,7 +53,7 @@ int main(void) {
 
     gen_keys(pk, mk, seed);
 
-    sha256_fun(pk);
+    sha256_fun("pk");
 
     return 0;
 }
