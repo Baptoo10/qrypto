@@ -22,10 +22,9 @@ KECCAK_HEADERS = $(HEADERS) $(REL_PATH)fips202.h $(REL_PATH)fips202x4.h
 AES_SOURCES = $(SOURCES) $(REL_PATH)fips202.c $(REL_PATH)aes256ctr.c
 AES_HEADERS = $(HEADERS) $(REL_PATH)fips202.h $(REL_PATH)aes256ctr.h
 
-gen_key_mode3: gen_key.c ./HashFunction/SHA256/sha256.c $(REL_PATH)randombytes.c $(AES_SOURCES) \
-$(AES_HEADERS)
+gen_key_mode3: gen_key.c $(REL_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS)
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
-	  -o $@ $< ./HashFunction/SHA256/sha256.c $(REL_PATH)randombytes.c $(AES_SOURCES)
+	  -o $@ $< $(REL_PATH)randombytes.c $(AES_SOURCES) -lssl -lcrypto
 
 
 

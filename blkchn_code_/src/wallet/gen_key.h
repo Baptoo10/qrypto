@@ -1,6 +1,4 @@
 #include <cstdint>
-#include "HashFunction/RIPEMD160/ripemd160.h"
-#include "HashFunction/SHA256/sha256.h"
 
 #ifndef WALLET_GEN_KEY_H
 #define WALLET_GEN_KEY_H
