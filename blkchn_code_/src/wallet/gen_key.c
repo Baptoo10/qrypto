@@ -63,7 +63,7 @@ int main(void) {
 
     gen_keys(pk, mk, seed);
 
-    sha256_fun("oui", sha256_hash);
+    sha256_fun(pk, sha256_hash);
 
     // FAIRE WALLET.dat ICI
     FILE *fPtr = fopen("./pk_key", "wb"); // Utilisez "wb" pour écrire en mode binaire
@@ -72,10 +72,10 @@ int main(void) {
 
     // OBJECTIF MAINTENANT : S'ASSURER QUE SHA256 fonctionne (normalement oui)
     printf("\nInput String: %s\n", showhex(pk, CRYPTO_PUBLICKEYBYTES));
-    printf("Binary Public Key:\n");
-    print_binary(pk, CRYPTO_PUBLICKEYBYTES);
+    //printf("Binary Public Key:\n");
+    //print_binary(pk, CRYPTO_PUBLICKEYBYTES);
     printf("\n");
-
+// Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
     printf("\nSHA-256 Hash: ");
 
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
