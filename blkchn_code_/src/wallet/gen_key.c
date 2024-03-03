@@ -19,6 +19,8 @@
 #define MAINNET
 //#define TESTNET
 
+#define CLASSICADDRESS
+
 
 char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
@@ -94,9 +96,9 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
     return 0;
 }
 
-int gen_keys(uint8_t pk[], uint8_t mk[], uint8_t seed[]) {
+int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
     // Gen of the keys (pk & sk (or mk))
-    crypto_sign_keypair(pk, mk, seed);
+    crypto_sign_keypair(pk, sk, seed);
 
     //printf("CRYPTO_PUBLICKEYBYTES = %d\n", CRYPTO_PUBLICKEYBYTES);
     //printf("CRYPTO_MASTERSECRETKEYBYTES = %d\n", CRYPTO_MASTERSECRETKEYBYTES);
@@ -114,17 +116,10 @@ int gen_address(uint8_t pk[]){
     unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
     unsigned char first_bytes[4];
 
-    // Performe first hash level with SHA256() on pk
+    // Perform first hash level with SHA256() on pk
     sha256_fun(pk, sha256_hash, 1);
     printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
-/*
-    printf("\nSHA256(pk) : ");
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        printf("%02x", sha256_hash[i]);
-    }
-    printf("\n");
-*/
     // Perform RIPEMD160 on previous sha256_hash result
     ripemd160_fun(sha256_hash, ripemd160_hash, 1);
 
@@ -134,7 +129,7 @@ int gen_address(uint8_t pk[]){
     const uint32_t chain_id = 0x4D41494E; // hex of MAINNET
     const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of MAINNET
 #else
-    const uint32_t chain_id = htonl(0x54455354); // hex of TESTNET
+    const uint32_t chain_id = 0x54455354; // hex of TESTNET
     const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET
 #endif
 
@@ -148,26 +143,32 @@ int gen_address(uint8_t pk[]){
     sha256_fun(chainid_ripemd160, sha256_hash, 2);
     printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
+    //Extract 4 first bytes of the DSHA256()
     memcpy(first_bytes, sha256_hash, 4);
+
     printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
 
+
+#ifdef CLASSICADDRESS
+    //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
+    const uint16_t addr_type = 0x027E; // C1 en b58 //pour classic version 1
+    const uint16_t order_addr_type = htonl(addr_type); // correct order of hex of MAINNET
+
+    unsigned char chainid_ripemd160_fb[sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH + 4];
+    memcpy(chainid_ripemd160_fb + sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4); //==aller a l'@ memoire donnee + ajouter n bytes a partir de l'emplacement
+    memcpy(chainid_ripemd160_fb + sizeof(addr_type), chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
+
+    memcpy(chainid_ripemd160_fb, &addr_type, sizeof(order_addr_type));
+    printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
+
+#else
+    //Concat of chainid_ripemd160 + 4 previous bytes
     unsigned char chainid_ripemd160_fb[4 + RIPEMD160_DIGEST_LENGTH + 4];
-    memcpy(chainid_ripemd160_fb + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4);
+    memcpy(chainid_ripemd160_fb + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4); //==aller a l'@ memoire donnee + ajouter n bytes a partir de l'emplacement
     memcpy(chainid_ripemd160_fb, chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
 
     printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
-
-
-    /*
-    unsigned char pk_ripemd160 = ripemd160_fun(&pk_sha256, ripemd160_hash);
-    printf("\nripemd160_hash Hash: ");
-
-    for (int i = 0; i < RIPEMD160_DIGEST_LENGTH; i++) {
-        printf("%02x", ripemd160_hash[i]);
-    }
-    printf("\n");
-*/
-
+#endif
 
 }
 
@@ -180,7 +181,8 @@ int main(void) {
 
     // FAIRE WALLET.dat ICI avec pk + sk
     FILE *fPtr = fopen("./wallet.dat", "wb");
-    fwrite(pk, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
+    fwrite(pk, sizeof(uint8_t), sizeof(pk), fPtr);
+    //fwrite(pk, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
     fclose(fPtr);
 
     gen_address(pk);
