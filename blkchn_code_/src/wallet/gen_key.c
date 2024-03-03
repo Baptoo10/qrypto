@@ -11,6 +11,8 @@
 #include "../avx2_dilithium3-AES-R/randombytes.h"
 #include "../avx2_dilithium3-AES-R/sign.h"
 
+#include "./base58.h"
+
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
 #define SEEDBYTES 32
@@ -76,6 +78,7 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
             // Calcul du hash final après que tous les fragments aient été hashés avec SHA256_Update
             SHA256_Final(hash, &sha256_ctx);
 
+/*
             //S'ASSURER QUE LE HASH A BIEN FONCTIONNE :
             FILE *fPtr = fopen("./i_", "wb");
             fwrite(hash, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
@@ -83,6 +86,7 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
 
             //EXE LA COMMANDE :  Get-Content -Path ./i_ -Encoding Byte | ForEach-Object { '{0:X2}' -f $_ } | Out-File -FilePath ./i_hex
             //OUVRIR LE FICHIER ./i_hex et check la sortie 'SHA256(SHA256(pk))' avec le contenu du fichier
+*/
         }else{
             // Calcul incrementiel du hash du message en fragments
             SHA256_Update(&sha256_ctx, data, CRYPTO_PUBLICKEYBYTES);
@@ -148,10 +152,11 @@ int gen_address(uint8_t pk[]){
 
     printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
 
-
+//EWo16Wy4miGPuKkgyWTxoo5jXjY83hKyrCNTQX53Q
+//Xn53KFwocJ5G6TFWSes51qfKRFHwyHdjkv4orbTmM
 #ifdef CLASSICADDRESS
     //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
-    const uint16_t addr_type = 0x027E; // C1 en b58 //pour classic version 1
+    const uint16_t addr_type = 0x9999; // Cq1 en b58 //pour classic version 1
     const uint16_t order_addr_type = htonl(addr_type); // correct order of hex of MAINNET
 
     unsigned char chainid_ripemd160_fb[sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH + 4];
@@ -169,6 +174,13 @@ int gen_address(uint8_t pk[]){
 
     printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
 #endif
+
+    size_t b58len = sizeof(chainid_ripemd160_fb);
+    char *b58_str = (char *)malloc(b58len);
+
+    e58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), &b58_str, &b58len);
+
+    printf("chainid_ripemd160_fb (base58): %s\n", b58_str);
 
 }
 

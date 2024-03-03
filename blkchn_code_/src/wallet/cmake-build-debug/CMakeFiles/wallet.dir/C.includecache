@@ -81,6 +81,14 @@ stdint.h
 -
 stdlib.h
 -
+string.h
+-
+arpa/inet.h
+-
+openssl/sha.h
+-
+openssl/ripemd.h
+-
 ../avx2_dilithium3-AES-R/randombytes.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/randombytes.h
 ../avx2_dilithium3-AES-R/sign.h

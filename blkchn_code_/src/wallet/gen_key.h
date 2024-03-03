@@ -1,4 +1,5 @@
 #include <cstdint>
+#include "./base58.h"
 
 #ifndef WALLET_GEN_KEY_H
 #define WALLET_GEN_KEY_H
