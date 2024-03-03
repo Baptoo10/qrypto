@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h> // Pour la fonction htonl
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
@@ -109,38 +110,53 @@ int gen_keys(uint8_t pk[], uint8_t mk[], uint8_t seed[]) {
 }
 
 int gen_address(uint8_t pk[]){
-
     unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
     unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
+    unsigned char first_bytes[4];
 
-    ///////////////////
-    unsigned char *pk_to_sha256_1 = sha256_fun(pk, sha256_hash, 1);
+    // Performe first hash level with SHA256() on pk
+    sha256_fun(pk, sha256_hash, 1);
+    printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
-    printf("\nSHA256(SHA256(pk)) : ");
+/*
+    printf("\nSHA256(pk) : ");
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
         printf("%02x", sha256_hash[i]);
     }
     printf("\n");
+*/
+    // Perform RIPEMD160 on previous sha256_hash result
+    ripemd160_fun(sha256_hash, ripemd160_hash, 1);
 
-    unsigned char *sha256_1_to_ripemd160 = ripemd160_fun(&pk_to_sha256_1, ripemd160_hash, 1);
+    printf("ripemd160_hash : %s\n", showhex(ripemd160_hash, RIPEMD160_DIGEST_LENGTH));
 
-
-    //REVIEW A PARTIR D'ICI | Suivre les instructions de construction d'@ ici : https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
 #ifdef MAINNET
-    char chain_id[7] = "4D41494E4E4554"; //hex of MAINNET
+    const uint32_t chain_id = 0x4D41494E; // hex of MAINNET
+    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of MAINNET
 #else
-    char chain_id[7] = "544553544E4554"; //hex of TESTNET
+    const uint32_t chain_id = htonl(0x54455354); // hex of TESTNET
+    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET
 #endif
 
-    // Concatenate chain ID and RIPEMD160 hash
-    unsigned char *chainid_ripemd160 = strcat(chain_id, &sha256_1_to_ripemd160);
+    unsigned char chainid_ripemd160[4 + RIPEMD160_DIGEST_LENGTH];
+    memcpy(chainid_ripemd160, &order_chain_id, sizeof(order_chain_id));
+    memcpy(chainid_ripemd160 + sizeof(order_chain_id), ripemd160_hash, RIPEMD160_DIGEST_LENGTH);
+    printf("chain_id : %08x\n", chain_id);
+    printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH));
 
-    unsigned char *chainid_ripemd160_to_dsha256 = sha256_fun(&chainid_ripemd160, sha256_hash, 2);
-    // Extract the first 4 bytes
-    unsigned char final_hash[4];
-    memcpy(result, final_hash, 4);
+    //DoubleSHA256 on chainid_ripemd160
+    sha256_fun(chainid_ripemd160, sha256_hash, 2);
+    printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
-    unsigned char *final_hash = strcat(&chainid_ripemd160, &chainid_ripemd160_to_dsha256);
+    memcpy(first_bytes, sha256_hash, 4);
+    printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
+
+    unsigned char chainid_ripemd160_fb[4 + RIPEMD160_DIGEST_LENGTH + 4];
+    memcpy(chainid_ripemd160_fb + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4);
+    memcpy(chainid_ripemd160_fb, chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
+
+    printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
+
 
     /*
     unsigned char pk_ripemd160 = ripemd160_fun(&pk_sha256, ripemd160_hash);
