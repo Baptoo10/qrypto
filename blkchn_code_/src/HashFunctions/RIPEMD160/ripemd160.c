@@ -1,6 +1,5 @@
 #include "ripemd160.h"
-#include <stddef.h>
-#include <stdio.h>
+
 #include <stdint.h>
 
 #include <openssl/ripemd.h>

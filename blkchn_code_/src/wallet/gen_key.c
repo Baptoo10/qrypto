@@ -8,13 +8,13 @@
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
-#include <../HashFunctions/SHA256/sha256.h>
-#include <../HashFunctions/RIPEMD160/ripemd160.h>
 
-#include "../avx2_dilithium3-AES-R/randombytes.h"
+#include "../HashFunctions/SHA256/sha256.h"
+#include "../HashFunctions/RIPEMD160/ripemd160.h"
+
 #include "../avx2_dilithium3-AES-R/sign.h"
 
-#include "base58/base58.h"
+#include "../base58/base58.h"
 
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
@@ -29,84 +29,11 @@
 
 char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
-int ripemd160_fun(uint8_t data[], unsigned char *hash, uint8_t rounds);
-//int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds)
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
 
-char *showhex(const uint8_t a[], int size) {
-    char *s = (char *)malloc(size * 2 + 1);
 
-    for (int i = 0; i < size; i++)
-        sprintf(s + i * 2, "%02x", a[i]);
 
-    return s;
-}
-
-void print_binary(const uint8_t a[], int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 7; j >= 0; j--) {
-            printf("%d", (a[i] >> j) & 1);
-        }
-    }
-    printf("\n");
-}
-
-int ripemd160_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
-
-    for (int i = 0; i < rounds; ++i) {
-
-        RIPEMD160_CTX ripemd160_ctx;
-        // Initialisation d'une valeur de hash
-        RIPEMD160_Init(&ripemd160_ctx);
-        // Calcul incrementiel du hash du message en fragments
-        RIPEMD160_Update(&ripemd160_ctx, data, RIPEMD160_DIGEST_LENGTH);
-        // Calcul du hash final après que tous les fragments aient été hashés avec RIPEMD160_Update
-        RIPEMD160_Final(hash, &ripemd160_ctx);
-
-        data = hash;
-    }
-    return 0;
-}
-/*
-int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
-
-    for (int i = 0; i < rounds; ++i) {
-        // Definition de la structure de donnees SHA256_CTX afin de stocker
-        // des etats intermediaires internes pendant le processus de calcul du hachage.
-        SHA256_CTX sha256_ctx;
-        // Initialisation d'une valeur de hash H^(0) initiale
-        SHA256_Init(&sha256_ctx);
-
-        if(data==hash){
-            // Calcul incrementiel du hash du message en fragments
-            SHA256_Update(&sha256_ctx, data, SHA256_DIGEST_LENGTH);
-            printf("pk==hash");
-            // Calcul du hash final après que tous les fragments aient été hashés avec SHA256_Update
-            SHA256_Final(hash, &sha256_ctx);
-
-/*
-            //S'ASSURER QUE LE HASH A BIEN FONCTIONNE :
-            FILE *fPtr = fopen("./i_", "wb");
-            fwrite(hash, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
-            fclose(fPtr);
-
-            //EXE LA COMMANDE :  Get-Content -Path ./i_ -Encoding Byte | ForEach-Object { '{0:X2}' -f $_ } | Out-File -FilePath ./i_hex
-            //OUVRIR LE FICHIER ./i_hex et check la sortie 'SHA256(SHA256(pk))' avec le contenu du fichier
-*
-        }else{
-            // Calcul incrementiel du hash du message en fragments
-            SHA256_Update(&sha256_ctx, data, CRYPTO_PUBLICKEYBYTES);
-            // Calcul du hash final après que tous les fragments aient été hashés avec SHA256_Update
-            SHA256_Final(hash, &sha256_ctx);
-        }
-
-        data = hash;
-    }
-
-    return 0;
-}
-*/
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
     // Gen of the keys (pk & sk (or mk))
     crypto_sign_keypair(pk, sk, seed);
@@ -123,7 +50,6 @@ int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
 }
 
 
-
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type) {
 
     printf("chainid_ripemd160_fb (ouiii) : %s\n", showhex(chainid_ripemd160_fb, chainid_ripemd160_fb_len));
@@ -134,6 +60,7 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
     char *b58_crf = (char *)malloc(b58len_crf);
     char *b58_addr = (char *)malloc(b58len_addr);
 
+    //Encode chainid_ripemd160_fb and addr_type
     e58(chainid_ripemd160_fb, chainid_ripemd160_fb_len, &b58_crf, &b58len_crf);
     e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len_addr);
 
@@ -146,13 +73,14 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
 
     printf("b58_addr||chainid_ripemd160_fb (base58): %s\n", addr_cat_crf);
 
+    // free memory
     free(b58_crf);
     free(b58_addr);
     free(addr_cat_crf);
 }
 
 
-
+// method to generate the address given a pk
 int gen_address(uint8_t pk[]){
     unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
     unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
@@ -198,7 +126,6 @@ int gen_address(uint8_t pk[]){
 #endif
 
     //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
-
     const uint16_t order_addr_type = htonl(addr_type); // correct order of hex of MAINNET
 
 
@@ -230,7 +157,23 @@ int main(void) {
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
-
-
     return 0;
+}
+
+char *showhex(const uint8_t a[], int size) {
+    char *s = (char *)malloc(size * 2 + 1);
+
+    for (int i = 0; i < size; i++)
+        sprintf(s + i * 2, "%02x", a[i]);
+
+    return s;
+}
+
+void print_binary(const uint8_t a[], int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 7; j >= 0; j--) {
+            printf("%d", (a[i] >> j) & 1);
+        }
+    }
+    printf("\n");
 }
