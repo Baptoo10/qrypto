@@ -17,7 +17,6 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds, size_t data_
         if(data==hash){
             // Calcul incrementiel du hash du message en fragments
             SHA256_Update(&sha256_ctx, data, SHA256_DIGEST_LENGTH);
-            printf("pk==hash");
             // Calcul du hash final après que tous les fragments aient été hashés avec SHA256_Update
             SHA256_Final(hash, &sha256_ctx);
 

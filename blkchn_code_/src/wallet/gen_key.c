@@ -52,8 +52,6 @@ int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
 
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type) {
 
-    printf("chainid_ripemd160_fb (ouiii) : %s\n", showhex(chainid_ripemd160_fb, chainid_ripemd160_fb_len));
-
     size_t b58len_crf = chainid_ripemd160_fb_len * (log(256) / log(58)) + 1;
     size_t b58len_addr = sizeof(addr_type) * (log(256) / log(58)) + 1;
 
@@ -65,13 +63,13 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
     e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len_addr);
 
     printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
-    printf("b58_addr (base58): %s\n", b58_addr);
+    //printf("b58_addr (base58): %s\n", b58_addr);
 
     char *addr_cat_crf = (char *)malloc(b58len_crf + b58len_addr + 1);
     strcpy(addr_cat_crf, b58_addr);
     strcat(addr_cat_crf, b58_crf);
 
-    printf("b58_addr||chainid_ripemd160_fb (base58): %s\n", addr_cat_crf);
+    printf("ADDRESS : b58_addr||chainid_ripemd160_fb (base58): %s\n", addr_cat_crf);
 
     // free memory
     free(b58_crf);
@@ -88,30 +86,30 @@ int gen_address(uint8_t pk[]){
 
     // Perform first hash level with SHA256() on pk
     sha256_fun(pk, sha256_hash, 1, CRYPTO_PUBLICKEYBYTES);
-    printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
+    //printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
     // Perform RIPEMD160 on previous sha256_hash result
     ripemd160_fun(sha256_hash, ripemd160_hash, 1);
 
-    printf("ripemd160_hash : %s\n", showhex(ripemd160_hash, RIPEMD160_DIGEST_LENGTH));
+    //printf("ripemd160_hash : %s\n", showhex(ripemd160_hash, RIPEMD160_DIGEST_LENGTH));
 
 #ifdef MAINNET
     const uint32_t chain_id = 0x4D41494E; // hex of MAINNET
     const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of MAINNET
 #else
-    const uint32_t chain_id = 0x54455354; // hex of TESTNET
-    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET
+    const uint32_t chain_id = 0x54455354; // hex of TESTNET => HtN9K in b58
+    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET => GUq8 in b58
 #endif
 
     unsigned char chainid_ripemd160[4 + RIPEMD160_DIGEST_LENGTH];
     memcpy(chainid_ripemd160, &order_chain_id, sizeof(order_chain_id));
     memcpy(chainid_ripemd160 + sizeof(order_chain_id), ripemd160_hash, RIPEMD160_DIGEST_LENGTH);
-    printf("chain_id : %08x\n", chain_id);
+    //printf("chain_id : %08x\n", chain_id);
     printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, sizeof(chainid_ripemd160)));
 
     //DoubleSHA256 on chainid_ripemd160
     sha256_fun(chainid_ripemd160, sha256_hash, 2, sizeof(chainid_ripemd160));
-    printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
+    //printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
     //Extract 4 first bytes of the DSHA256()
     memcpy(first_bytes, sha256_hash, 4);
