@@ -4,14 +4,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h> // Pour la fonction htonl
+#include <math.h>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
+#include <../HashFunctions/SHA256/sha256.h>
+#include <../HashFunctions/RIPEMD160/ripemd160.h>
 
 #include "../avx2_dilithium3-AES-R/randombytes.h"
 #include "../avx2_dilithium3-AES-R/sign.h"
 
-#include "./base58.h"
+#include "base58/base58.h"
 
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
@@ -26,6 +29,10 @@
 
 char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
+int ripemd160_fun(uint8_t data[], unsigned char *hash, uint8_t rounds);
+//int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds)
+int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
+void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
 
 char *showhex(const uint8_t a[], int size) {
     char *s = (char *)malloc(size * 2 + 1);
@@ -61,7 +68,7 @@ int ripemd160_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
     }
     return 0;
 }
-
+/*
 int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
 
     for (int i = 0; i < rounds; ++i) {
@@ -86,7 +93,7 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
 
             //EXE LA COMMANDE :  Get-Content -Path ./i_ -Encoding Byte | ForEach-Object { '{0:X2}' -f $_ } | Out-File -FilePath ./i_hex
             //OUVRIR LE FICHIER ./i_hex et check la sortie 'SHA256(SHA256(pk))' avec le contenu du fichier
-*/
+*
         }else{
             // Calcul incrementiel du hash du message en fragments
             SHA256_Update(&sha256_ctx, data, CRYPTO_PUBLICKEYBYTES);
@@ -99,7 +106,7 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds) {
 
     return 0;
 }
-
+*/
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
     // Gen of the keys (pk & sk (or mk))
     crypto_sign_keypair(pk, sk, seed);
@@ -115,13 +122,44 @@ int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
     return 0;
 }
 
+
+
+void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type) {
+
+    printf("chainid_ripemd160_fb (ouiii) : %s\n", showhex(chainid_ripemd160_fb, chainid_ripemd160_fb_len));
+
+    size_t b58len_crf = chainid_ripemd160_fb_len * (log(256) / log(58)) + 1;
+    size_t b58len_addr = sizeof(addr_type) * (log(256) / log(58)) + 1;
+
+    char *b58_crf = (char *)malloc(b58len_crf);
+    char *b58_addr = (char *)malloc(b58len_addr);
+
+    e58(chainid_ripemd160_fb, chainid_ripemd160_fb_len, &b58_crf, &b58len_crf);
+    e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len_addr);
+
+    printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
+    printf("b58_addr (base58): %s\n", b58_addr);
+
+    char *addr_cat_crf = (char *)malloc(b58len_crf + b58len_addr + 1);
+    strcpy(addr_cat_crf, b58_addr);
+    strcat(addr_cat_crf, b58_crf);
+
+    printf("b58_addr||chainid_ripemd160_fb (base58): %s\n", addr_cat_crf);
+
+    free(b58_crf);
+    free(b58_addr);
+    free(addr_cat_crf);
+}
+
+
+
 int gen_address(uint8_t pk[]){
     unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
     unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
     unsigned char first_bytes[4];
 
     // Perform first hash level with SHA256() on pk
-    sha256_fun(pk, sha256_hash, 1);
+    sha256_fun(pk, sha256_hash, 1, CRYPTO_PUBLICKEYBYTES);
     printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
     // Perform RIPEMD160 on previous sha256_hash result
@@ -141,10 +179,10 @@ int gen_address(uint8_t pk[]){
     memcpy(chainid_ripemd160, &order_chain_id, sizeof(order_chain_id));
     memcpy(chainid_ripemd160 + sizeof(order_chain_id), ripemd160_hash, RIPEMD160_DIGEST_LENGTH);
     printf("chain_id : %08x\n", chain_id);
-    printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH));
+    printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, sizeof(chainid_ripemd160)));
 
     //DoubleSHA256 on chainid_ripemd160
-    sha256_fun(chainid_ripemd160, sha256_hash, 2);
+    sha256_fun(chainid_ripemd160, sha256_hash, 2, sizeof(chainid_ripemd160));
     printf("sha256_hash : %s\n", showhex(sha256_hash, SHA256_DIGEST_LENGTH));
 
     //Extract 4 first bytes of the DSHA256()
@@ -152,46 +190,25 @@ int gen_address(uint8_t pk[]){
 
     printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
 
-//EWo16Wy4miGPuKkgyWTxoo5jXjY83hKyrCNTQX53Q
-//Xn53KFwocJ5G6TFWSes51qfKRFHwyHdjkv4orbTmM
+
 #ifdef CLASSICADDRESS
-    //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
     const uint16_t addr_type = 0x6C9B; // Cq1 en b58 //pour classic version 1
+#else
+    const uint16_t addr_type = 0x0000; // 11 en b58 //pour default
+#endif
+
+    //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
+
     const uint16_t order_addr_type = htonl(addr_type); // correct order of hex of MAINNET
 
+
     unsigned char chainid_ripemd160_fb[sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH + 4];
-    memcpy(chainid_ripemd160_fb + sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4); //==aller a l'@ memoire donnee + ajouter n bytes a partir de l'emplacement
-    memcpy(chainid_ripemd160_fb + sizeof(addr_type), chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
-
-    printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
-
-#else
-    //Concat of chainid_ripemd160 + 4 previous bytes
-    unsigned char chainid_ripemd160_fb[4 + RIPEMD160_DIGEST_LENGTH + 4];
-    memcpy(chainid_ripemd160_fb + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4); //==aller a l'@ memoire donnee + ajouter n bytes a partir de l'emplacement
+    memcpy(chainid_ripemd160_fb + sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4);
     memcpy(chainid_ripemd160_fb, chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
 
     printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
-#endif
 
-    size_t b58len = sizeof(chainid_ripemd160_fb) * 1.5 + 1;
-    size_t b58len2 = sizeof(addr_type) * 1.5 + 1;
-
-    char *b58_crf = (char *)malloc(b58len);
-    char *b58_addr = (char *)malloc(b58len2);
-
-    e58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), &b58_crf, &b58len);
-    e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len2);
-    printf("1chainid_ripemd160_fb (base58): %s\n", b58_crf);
-
-    // Concatenate the base58 strings (b58_addr || b58_crf)
-    memcpy(b58_crf, b58_addr, b58len2);
-
-    printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
-    printf("b58_addr (base58): %s\n", b58_addr);
-
-   // free(b58_addr);
-   // free(b58_crf);
+    encodageb58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), addr_type);
 
 
 }

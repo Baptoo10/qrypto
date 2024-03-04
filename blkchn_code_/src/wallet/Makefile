@@ -6,25 +6,29 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
 NISTFLAGS += -Wno-unused-result -mavx2 -mpopcnt -maes -mbmi2 \
   -march=native -mtune=native -O3
 
-REL_PATH = ../avx2_dilithium3-AES-R/
+DILITHIUM_PATH = ../avx2_dilithium3-AES-R/
+HASHFUN_PATH = ../HashFunctions/
 
-SOURCES = $(REL_PATH)sign.c $(REL_PATH)packing.c $(REL_PATH)polyvec.c $(REL_PATH)poly.c $(REL_PATH)ntt.S \
-  $(REL_PATH)invntt.S $(REL_PATH)pointwise.S $(REL_PATH)consts.c $(REL_PATH)rejsample.c $(REL_PATH)rounding.c
+SOURCES = $(DILITHIUM_PATH)sign.c $(DILITHIUM_PATH)packing.c $(DILITHIUM_PATH)polyvec.c $(DILITHIUM_PATH)poly.c $(DILITHIUM_PATH)ntt.S \
+  $(DILITHIUM_PATH)invntt.S $(DILITHIUM_PATH)pointwise.S $(DILITHIUM_PATH)consts.c $(DILITHIUM_PATH)rejsample.c $(DILITHIUM_PATH)rounding.c
 
-HEADERS = ./base58.h $(REL_PATH)config.h $(REL_PATH)params.h $(REL_PATH)api.h $(REL_PATH)sign.h $(REL_PATH)packing.h \
-  $(REL_PATH)polyvec.h $(REL_PATH)poly.h $(REL_PATH)ntt.h $(REL_PATH)consts.h \
-  $(REL_PATH)rejsample.h $(REL_PATH)rounding.h $(REL_PATH)symmetric.h $(REL_PATH)randombytes.h
+HEADERS = base58/base58.h $(DILITHIUM_PATH)config.h $(DILITHIUM_PATH)params.h $(DILITHIUM_PATH)api.h $(DILITHIUM_PATH)sign.h $(DILITHIUM_PATH)packing.h \
+  $(DILITHIUM_PATH)polyvec.h $(DILITHIUM_PATH)poly.h $(DILITHIUM_PATH)ntt.h $(DILITHIUM_PATH)consts.h \
+  $(DILITHIUM_PATH)rejsample.h $(DILITHIUM_PATH)rounding.h $(DILITHIUM_PATH)symmetric.h $(DILITHIUM_PATH)randombytes.h
 
-KECCAK_SOURCES = $(SOURCES) $(REL_PATH)fips202.c $(REL_PATH)fips202x4.c $(REL_PATH)symmetric-shake.c \
-  $(REL_PATH)keccak4x/KeccakP-1600-times4-SIMD256.o
+KECCAK_SOURCES = $(SOURCES) $(DILITHIUM_PATH)fips202.c $(DILITHIUM_PATH)fips202x4.c $(DILITHIUM_PATH)symmetric-shake.c \
+  $(DILITHIUM_PATH)keccak4x/KeccakP-1600-times4-SIMD256.o
 
-KECCAK_HEADERS = $(HEADERS) $(REL_PATH)fips202.h $(REL_PATH)fips202x4.h
-AES_SOURCES = $(SOURCES) $(REL_PATH)fips202.c $(REL_PATH)aes256ctr.c
-AES_HEADERS = $(HEADERS) $(REL_PATH)fips202.h $(REL_PATH)aes256ctr.h
+KECCAK_HEADERS = $(HEADERS) $(DILITHIUM_PATH)fips202.h $(DILITHIUM_PATH)fips202x4.h
+AES_SOURCES = $(SOURCES) $(DILITHIUM_PATH)fips202.c $(DILITHIUM_PATH)aes256ctr.c
+AES_HEADERS = $(HEADERS) $(DILITHIUM_PATH)fips202.h $(DILITHIUM_PATH)aes256ctr.h
 
-gen_key_mode3: gen_key.c ./base58.c $(REL_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS)
+HASHFUNCTIONS_SOURCES = $(HASHFUN_PATH)/SHA256/sha256.h $(HASHFUN_PATH)/RIPEMD160/ripemd160.h
+HASHFUNCTIONS_HEADERS = $(HASHFUN_PATH)/SHA256/sha256.h $(HASHFUN_PATH)/RIPEMD160/ripemd160.h
+
+gen_key_mode3: gen_key.c base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS) $(HASHFUNCTIONS_SOURCES) $(HASHFUNCTIONS_HEADERS)
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
-	  -o $@ $< ./base58.c $(REL_PATH)randombytes.c $(AES_SOURCES) -lssl -lcrypto
+	  -o $@ $< base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
 
 
 
