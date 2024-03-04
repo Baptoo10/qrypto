@@ -156,14 +156,13 @@ int gen_address(uint8_t pk[]){
 //Xn53KFwocJ5G6TFWSes51qfKRFHwyHdjkv4orbTmM
 #ifdef CLASSICADDRESS
     //Concat of : addr_type + chainid_ripemd160 + 4 previous bytes
-    const uint16_t addr_type = 0x9999; // Cq1 en b58 //pour classic version 1
+    const uint16_t addr_type = 0x6C9B; // Cq1 en b58 //pour classic version 1
     const uint16_t order_addr_type = htonl(addr_type); // correct order of hex of MAINNET
 
     unsigned char chainid_ripemd160_fb[sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH + 4];
     memcpy(chainid_ripemd160_fb + sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4); //==aller a l'@ memoire donnee + ajouter n bytes a partir de l'emplacement
     memcpy(chainid_ripemd160_fb + sizeof(addr_type), chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
 
-    memcpy(chainid_ripemd160_fb, &addr_type, sizeof(order_addr_type));
     printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
 
 #else
@@ -175,12 +174,25 @@ int gen_address(uint8_t pk[]){
     printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
 #endif
 
-    size_t b58len = sizeof(chainid_ripemd160_fb);
-    char *b58_str = (char *)malloc(b58len);
+    size_t b58len = sizeof(chainid_ripemd160_fb) * 1.5 + 1;
+    size_t b58len2 = sizeof(addr_type) * 1.5 + 1;
 
-    e58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), &b58_str, &b58len);
+    char *b58_crf = (char *)malloc(b58len);
+    char *b58_addr = (char *)malloc(b58len2);
 
-    printf("chainid_ripemd160_fb (base58): %s\n", b58_str);
+    e58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), &b58_crf, &b58len);
+    e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len2);
+    printf("1chainid_ripemd160_fb (base58): %s\n", b58_crf);
+
+    // Concatenate the base58 strings (b58_addr || b58_crf)
+    memcpy(b58_crf, b58_addr, b58len2);
+
+    printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
+    printf("b58_addr (base58): %s\n", b58_addr);
+
+   // free(b58_addr);
+   // free(b58_crf);
+
 
 }
 
