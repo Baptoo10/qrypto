@@ -1,4 +1,4 @@
-#include "walletdat_encrypt.h"
+#include "gpt_walletdat_decrypt.h"
 
 #include <iostream>
 #include <fstream>
@@ -10,11 +10,11 @@
 
 void handleErrors()
 {
-    std::cerr << (stderr);
+    std::cerr << "Error" << std::endl;
     exit(1);
 }
 
-void encryptFile(const std::string &inputFilename, const std::string &outputFilename, const std::string &password)
+void decryptFile(const std::string &inputFilename, const std::string &outputFilename, const std::string &password)
 {
     std::ifstream inputFile(inputFilename, std::ios::binary);
     std::ofstream outputFile(outputFilename, std::ios::binary);
@@ -38,37 +38,37 @@ void encryptFile(const std::string &inputFilename, const std::string &outputFile
     EVP_CIPHER_CTX *ctx;
     ctx = EVP_CIPHER_CTX_new();
 
-    // Initialiser le contexte de chiffrement
-    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1)
+    // Initialiser le contexte de déchiffrement
+    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1)
     {
         handleErrors();
     }
 
     // Tampon pour stocker les données lues à partir du fichier
     unsigned char buffer[1024];
-    int bytesRead, cipherTextLength;
-    unsigned char cipherText[1024 + EVP_MAX_BLOCK_LENGTH];
+    int bytesRead, plainTextLength;
+    unsigned char plainText[1024 + EVP_MAX_BLOCK_LENGTH];
 
-    // Lire le fichier par blocs et chiffrer chaque bloc
+    // Lire le fichier par blocs et déchiffrer chaque bloc
     while ((bytesRead = inputFile.readsome(reinterpret_cast<char *>(buffer), sizeof(buffer))) > 0)
     {
-        if (EVP_EncryptUpdate(ctx, cipherText, &cipherTextLength, buffer, bytesRead) != 1)
+        if (EVP_DecryptUpdate(ctx, plainText, &plainTextLength, buffer, bytesRead) != 1)
         {
             handleErrors();
         }
 
-        // Écrire le texte chiffré dans le fichier de sortie
-        outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
+        // Écrire le texte déchiffré dans le fichier de sortie
+        outputFile.write(reinterpret_cast<const char *>(plainText), plainTextLength);
     }
 
-    // Finaliser le chiffrement
-    if (EVP_EncryptFinal_ex(ctx, cipherText, &cipherTextLength) != 1)
+    // Finaliser le déchiffrement
+    if (EVP_DecryptFinal_ex(ctx, plainText, &plainTextLength) != 1)
     {
         handleErrors();
     }
 
-    // Écrire la dernière partie du texte chiffré dans le fichier de sortie
-    outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
+    // Écrire la dernière partie du texte déchiffré dans le fichier de sortie
+    outputFile.write(reinterpret_cast<const char *>(plainText), plainTextLength);
 
     // Libérer les ressources
     EVP_CIPHER_CTX_free(ctx);
@@ -88,9 +88,9 @@ int main(int argc, char *argv[])
     const std::string outputFilename = argv[2];
     const std::string password = argv[3];
 
-    encryptFile(inputFilename, outputFilename, password);
+    decryptFile(inputFilename, outputFilename, password);
 
-    std::cout << "Encryption successful." << std::endl;
+    std::cout << "Decryption successful." << std::endl;
 
     return 0;
 }

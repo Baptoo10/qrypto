@@ -144,13 +144,28 @@ int main(void) {
     uint8_t seed[3 * SEEDBYTES];
 
     gen_keys(pk, mk, seed);
+/*
+Oui
+Non
+Peutêtre
+!!L_O ?
+ */
+/*
+ * PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
+#ifdef WALLETUNLOCK
+    #undef WALLETLOCK
 
-    // FAIRE WALLET.dat ICI avec pk + sk
+    // AJOUTER AU WALLET.dat ICI pk + sk + addr
     FILE *fPtr = fopen("./wallet.dat", "wb");
     fwrite(pk, sizeof(uint8_t), sizeof(pk), fPtr);
     //fwrite(pk, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
     fclose(fPtr);
 
+
+#else if WALLETLOCK
+    #undef WALLETUNLOCK
+#endif
+*/
     gen_address(pk);
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
