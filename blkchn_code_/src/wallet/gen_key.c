@@ -20,12 +20,15 @@
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
 #define SEEDBYTES 32
 
+#define ADDRESS 44
+
 //A AJOUTER DANS UN FICHIER config.h
 #define MAINNET
 //#define TESTNET
 
 #define CLASSICADDRESS
 
+char *addr_cat_crf = NULL;
 
 char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
@@ -58,23 +61,31 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
     char *b58_crf = (char *)malloc(b58len_crf);
     char *b58_addr = (char *)malloc(b58len_addr);
 
-    //Encode chainid_ripemd160_fb and addr_type
+    // Encode chainid_ripemd160_fb and addr_type
     e58(chainid_ripemd160_fb, chainid_ripemd160_fb_len, &b58_crf, &b58len_crf);
     e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len_addr);
 
     printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
     //printf("b58_addr (base58): %s\n", b58_addr);
 
-    char *addr_cat_crf = (char *)malloc(b58len_crf + b58len_addr + 1);
+    // Allocate memory for addr_cat_crf
+    addr_cat_crf = (char *)malloc(b58len_crf + b58len_addr + 1);
+
+    // Check for memory allocation success
+    if (addr_cat_crf == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Combine b58_addr and b58_crf into addr_cat_crf
     strcpy(addr_cat_crf, b58_addr);
     strcat(addr_cat_crf, b58_crf);
 
     printf("ADDRESS : b58_addr||chainid_ripemd160_fb (base58): %s\n", addr_cat_crf);
 
-    // free memory
+    // Free memory
     free(b58_crf);
     free(b58_addr);
-    free(addr_cat_crf);
 }
 
 
@@ -138,35 +149,64 @@ int gen_address(uint8_t pk[]){
 
 }
 
+void walletdat(uint8_t pk[], uint8_t sk[]) {
+
+    FILE *fPtr = fopen("./wallet.dat", "wb");
+
+    if (fPtr == NULL) {
+        printf(stderr, "Error: Cannot open the wallet.dat file for writing (wb).\n");
+        exit(1);
+    }
+
+    // State of the file
+    fprintf(fPtr, "unlock\n");
+
+    // Writing bruts values
+    fprintf(fPtr, "brut values : \n");
+
+    fprintf(fPtr, "brut public key :\n");
+    fwrite(pk, sizeof(uint8_t), CRYPTO_PUBLICKEYBYTES, fPtr);
+
+    fprintf(fPtr, "\n\nbrut secret key :\n");
+    fwrite(sk, sizeof(uint8_t), CRYPTO_SECRETKEYBYTES, fPtr);
+
+    //////////////////////////////////////////////////////////////////////
+
+    // Écriture des valeurs hexadécimales
+    fprintf(fPtr, "\n\nhex values : \n");
+
+    fprintf(fPtr, "public key : %s\n", showhex(pk, CRYPTO_PUBLICKEYBYTES));
+    fprintf(fPtr, "secret key : %s\n", showhex(sk, CRYPTO_SECRETKEYBYTES));
+    fprintf(fPtr, "address : %s\n", addr_cat_crf);
+
+    fclose(fPtr);
+
+    // Free memory
+    free(addr_cat_crf);
+}
+
+
 int main(void) {
     uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
     uint8_t pk[CRYPTO_PUBLICKEYBYTES];
     uint8_t seed[3 * SEEDBYTES];
 
     gen_keys(pk, mk, seed);
-/*
-Oui
-Non
-Peutêtre
-!!L_O ?
- */
+    gen_address(pk);
+
 /*
  * PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
 #ifdef WALLETUNLOCK
     #undef WALLETLOCK
 
-    // AJOUTER AU WALLET.dat ICI pk + sk + addr
-    FILE *fPtr = fopen("./wallet.dat", "wb");
-    fwrite(pk, sizeof(uint8_t), sizeof(pk), fPtr);
-    //fwrite(pk, sizeof(uint8_t), SHA256_DIGEST_LENGTH, fPtr);
-    fclose(fPtr);
-
-
+*/
+    walletdat(pk, mk);
+    //ASK si l'user veut chiffrer le fichier
+/*
 #else if WALLETLOCK
     #undef WALLETUNLOCK
 #endif
 */
-    gen_address(pk);
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
