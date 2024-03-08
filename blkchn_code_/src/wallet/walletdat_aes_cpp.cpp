@@ -4,7 +4,6 @@ using namespace std;
 
 #include <iostream>
 #include <fstream>
-#include <cstdio>
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
@@ -25,6 +24,7 @@ void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned 
 }
 
 void aes_file(const string &inputFilename, const string &outputFilename, const string &password) {
+
     ifstream inputFile(inputFilename, ios::binary);
     ofstream outputFile(outputFilename, ios::binary);
 
@@ -37,11 +37,11 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
 
     cout << "first line " << firstLine << endl;
 
-    bool crypttype;  // No need to initialize, will be false by default
+    bool crypttype;
     if (firstLine.find("unlock") != string::npos) {
-        crypttype = true;  // la ligne contient "unlock"
+        crypttype = true;  // Must encrypt the file
     } else if (firstLine.find("lock") != string::npos) {
-        crypttype = false;  // la ligne contient "lock"
+        crypttype = false;  // Must descrypt the file
     } else {
         cerr << "Invalid mode found in the file." << endl;
         exit(1);
@@ -63,7 +63,7 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
         if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
             err();
         }
-    } else {
+    } else if (!crypttype){
         // Initialization of the decipher context
         if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
             err();
@@ -71,13 +71,13 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
     }
 
     unsigned char buffer[1024];
-    int bytesRead, cipherTextLength, plainTextLength;
-    unsigned char cipherText[1024 + EVP_MAX_BLOCK_LENGTH], plainText[1024 + EVP_MAX_BLOCK_LENGTH];
+    int bytesRead, cipherTextLength, clearTextLength;
+    unsigned char cipherText[1024 + EVP_MAX_BLOCK_LENGTH], clearText[1024 + EVP_MAX_BLOCK_LENGTH];
 
-    if (!crypttype) {
-        // Write "lock" as the first line
+    if (crypttype) { // If the file is encrypted, must decrypt it and write "unlock" on first line
+        // Write "unlock" as the first line
         outputFile << "lock" << std::endl;
-    } else if(crypttype){
+    } else if(!crypttype){ // If the file is decrypted, must encrypt it and write "lock" on first line
         // Write "unlock" as the first line
         outputFile << "unlock" << std::endl;
     }
@@ -89,12 +89,12 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
             }
             // Writing the ciphertext in the outputFile
             outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
-        } else {
-            if (EVP_DecryptUpdate(ctx, plainText, &plainTextLength, buffer, bytesRead) != 1) {
+        } else if(!crypttype){
+            if (EVP_DecryptUpdate(ctx, clearText, &clearTextLength, buffer, bytesRead) != 1) {
                 err();
             }
-            // Writing the deciphertext in the outputFile
-            outputFile.write(reinterpret_cast<const char *>(plainText), plainTextLength);
+            // Writing the cleartext in the outputFile
+            outputFile.write(reinterpret_cast<const char *>(clearText), clearTextLength);
         }
     }
 
@@ -108,14 +108,14 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
         outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
 
         remove(inputFilename.c_str());
-    } else {
-        // Ending the encryption
-        if (EVP_DecryptFinal_ex(ctx, plainText, &plainTextLength) != 1) {
+    } else if(!crypttype){
+        // Ending the decryption
+        if (EVP_DecryptFinal_ex(ctx, clearText, &clearTextLength) != 1) {
             err();
         }
 
         // Writing the last part of the deciphertext in the outputFile
-        outputFile.write(reinterpret_cast<const char *>(plainText), plainTextLength);
+        outputFile.write(reinterpret_cast<const char *>(clearText), clearTextLength);
 
         remove(inputFilename.c_str());
     }
@@ -125,6 +125,7 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
     outputFile.close();
 }
 
+/*
 int main(int argc, char *argv[]) {
     if (argc != 4){
         cerr << "Usage: " << argv[0] << " <filename> <password> <mode: encrypt/decrypt>" << endl;
@@ -148,6 +149,47 @@ int main(int argc, char *argv[]) {
         cout << "Encryption successful." << endl;
     } else {
         cout << "Decryption successful." << endl;
+    }
+
+    return 0;
+}
+*/
+
+
+int main(int argc, char *argv[]) {
+
+    if (argc != 4){
+        cerr << "Usage: " << argv[0] << " <filename> <password> <mode: encrypt/decrypt>" << endl;
+        return 1;
+    }
+
+    string inputFilename = argv[1];
+    const string password = argv[2];
+    const string mode = argv[3];
+
+    string enc = "enc_";
+
+    if (mode == "encrypt") {
+        aes_file(inputFilename, enc + inputFilename, password);
+        cout << "Encryption successful." << endl;
+    }
+    else if (mode == "decrypt") {
+
+        size_t pos = inputFilename.find(enc);
+        string outputFilename = inputFilename;
+
+        if (pos != string::npos) {
+            outputFilename.erase(pos, enc.length());
+            cout << "inputFilename : " << inputFilename << " | outputFilename : " << outputFilename << endl;
+
+        }
+
+        aes_file(inputFilename, outputFilename, password);
+        cout << "Decryption successful." << endl;
+    }
+    else {
+        cerr << "Invalid mode. Use 'encrypt' or 'decrypt'." << endl;
+        return 1;
     }
 
     return 0;
