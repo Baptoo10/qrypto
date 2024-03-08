@@ -6,6 +6,18 @@
 
 #IncludeRegexTransform: 
 
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/HashFunctions/RIPEMD160/ripemd160.h
+stdint.h
+-
+
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/HashFunctions/SHA256/sha256.h
+stddef.h
+-
+stdio.h
+-
+stdint.h
+-
+
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/aes256ctr.h
 stddef.h
 -
@@ -42,12 +54,6 @@ params.h
 poly.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/poly.h
 
-/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/randombytes.h
-stddef.h
--
-stdint.h
--
-
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/sign.h
 stddef.h
 -
@@ -72,6 +78,12 @@ fips202.h
 fips202.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/fips202.h
 
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/base58/base58.h
+stdint.h
+-
+stddef.h
+-
+
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.c
 stddef.h
 -
@@ -85,12 +97,18 @@ string.h
 -
 arpa/inet.h
 -
+math.h
+-
 openssl/sha.h
 -
 openssl/ripemd.h
 -
-../avx2_dilithium3-AES-R/randombytes.h
-/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/randombytes.h
+../HashFunctions/SHA256/sha256.h
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/HashFunctions/SHA256/sha256.h
+../HashFunctions/RIPEMD160/ripemd160.h
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/HashFunctions/RIPEMD160/ripemd160.h
 ../avx2_dilithium3-AES-R/sign.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/sign.h
+../base58/base58.h
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/base58/base58.h
 

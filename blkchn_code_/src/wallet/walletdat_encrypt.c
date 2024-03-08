@@ -147,7 +147,7 @@ void decrypt(const char *filename, const char *password)
 
 int main(){
 
-    const char *filename = "Wallet_roadmap.txt";
+    const char *filename = "test.txt";
     const char *password = "oui";
 
     // Chiffrer le fichier

@@ -1,8 +1,0 @@
-//
-// Created by bapti on 04/03/2024.
-//
-
-#ifndef WALLET_WALLETDAT_DECRYPT_H
-#define WALLET_WALLETDAT_DECRYPT_H
-
-#endif //WALLET_WALLETDAT_DECRYPT_H
