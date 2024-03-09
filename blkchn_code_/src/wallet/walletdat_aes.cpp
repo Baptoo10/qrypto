@@ -14,12 +14,17 @@ using namespace std;
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <string>
+#include <regex>
 
 #define KEY_SIZE 32 // key size = 256 bits
 #define IV_SIZE 16  // initialized vector size = 128 bits
 
-void err(void){
-    cerr << "Error" << endl;
+void errFile(const char *errmessage, const char *filename) {
+    cerr << "Error : " << errmessage << " " << filename << endl;
+    exit(1);
+}
+
+void err(void ) {
     exit(1);
 }
 
@@ -37,11 +42,12 @@ void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned 
     }
 }
 
+
 void aes_file(const string &inputFilename, const string &password) {
 
     ifstream inputFile(inputFilename, ios::binary);
     if (!inputFile) {
-        err();
+        errFile("Cannot open %s", inputFilename.c_str());
     }
 
     string firstLine;
@@ -78,7 +84,7 @@ void aes_file(const string &inputFilename, const string &password) {
     ofstream outputFile(outputFilename, ios::binary);
 
     if (!outputFile) {
-        err();
+        errFile("Cannot open %s", outputFilename.c_str());
     }
 
     cout << crypttype << endl;
