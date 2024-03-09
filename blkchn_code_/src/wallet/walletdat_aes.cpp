@@ -1,6 +1,6 @@
 using namespace std;
 
-#include "walletdat_aes_cpp.h"
+#include "walletdat_aes.h"
 
 #ifdef _WIN32 || _WIN64
     #include <Windows.h>
@@ -23,13 +23,12 @@ void err(void){
     exit(1);
 }
 
-
 void makeFileReadOnly(const string &filename) {
-#ifdef _WIN32
-    SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
-#elifdef __linux__
-    chmod(filename.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
-#endif
+    #ifdef _WIN32
+        SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
+    #elif defined(__linux__) || defined(__linux)
+        chmod(filename.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
+    #endif
 }
 
 void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned char *iv){
@@ -38,28 +37,48 @@ void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned 
     }
 }
 
-void aes_file(const string &inputFilename, const string &outputFilename, const string &password) {
+void aes_file(const string &inputFilename, const string &password) {
 
     ifstream inputFile(inputFilename, ios::binary);
-    ofstream outputFile(outputFilename, ios::binary);
-
-    if (!inputFile || !outputFile) {
+    if (!inputFile) {
         err();
     }
 
     string firstLine;
     getline(inputFile, firstLine);
-
     cout << "first line " << firstLine << endl;
+
+    string outputFilename;
+    string enc = "enc_";
 
     bool crypttype;
     if (firstLine.find("unlock") != string::npos) {
         crypttype = true;  // Must encrypt the file
-    } else if (firstLine.find("lock") != string::npos) {
+        outputFilename = enc + inputFilename;
+        cout << "Encryption successful." << endl;
+    }
+    else if (firstLine.find("lock") != string::npos) {
         crypttype = false;  // Must descrypt the file
-    } else {
+
+        size_t pos = inputFilename.find(enc);
+        outputFilename = inputFilename;
+
+        if (pos != string::npos) {
+            outputFilename.erase(pos, enc.length());
+            cout << "inputFilename : " << inputFilename << " | outputFilename : " << outputFilename << endl;
+        }
+
+        cout << "Decryption successful." << endl;
+    }
+    else {
         cerr << "Invalid mode found in the file." << endl;
         exit(1);
+    }
+
+    ofstream outputFile(outputFilename, ios::binary);
+
+    if (!outputFile) {
+        err();
     }
 
     cout << crypttype << endl;
@@ -135,86 +154,26 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
         remove(inputFilename.c_str());
     }
 
-    if (chmod(outputFilename.c_str(), S_IRUSR) != 0) {
-        cerr << "Error setting file permissions." << endl;
-        exit(1);
-    }
-
+    //NE FONCTIONNE PAS jsp pk
+    makeFileReadOnly(outputFilename);
 
     EVP_CIPHER_CTX_free(ctx);
     inputFile.close();
     outputFile.close();
 
-    makeFileReadOnly(outputFilename);
-
 }
 
-/*
 int main(int argc, char *argv[]) {
-    if (argc != 4){
-        cerr << "Usage: " << argv[0] << " <filename> <password> <mode: encrypt/decrypt>" << endl;
+
+    if (argc != 3){
+        cerr << "Usage: " << argv[0] << " <filename> <password>" << endl;
         return 1;
     }
 
     string inputFilename = argv[1];
     const string password = argv[2];
-    const string mode = argv[3];
 
-    if (mode != "encrypt" && mode != "decrypt") {
-        cerr << "Invalid mode. Use 'encrypt' or 'decrypt'." << endl;
-        return 1;
-    }
-
-    string outputFilename = (mode == "encrypt") ? "enc_" + inputFilename : inputFilename;
-
-    aes_file(inputFilename, outputFilename, password);
-
-    if (mode == "encrypt") {
-        cout << "Encryption successful." << endl;
-    } else {
-        cout << "Decryption successful." << endl;
-    }
-
-    return 0;
-}
-*/
-
-
-int main(int argc, char *argv[]) {
-
-    if (argc != 4){
-        cerr << "Usage: " << argv[0] << " <filename> <password> <mode: encrypt/decrypt>" << endl;
-        return 1;
-    }
-
-    string inputFilename = argv[1];
-    const string password = argv[2];
-    const string mode = argv[3];
-
-    string enc = "enc_";
-
-    if (mode == "encrypt") {
-        aes_file(inputFilename, enc + inputFilename, password);
-        cout << "Encryption successful." << endl;
-    }
-    else if (mode == "decrypt") {
-
-        size_t pos = inputFilename.find(enc);
-        string outputFilename = inputFilename;
-
-        if (pos != string::npos) {
-            outputFilename.erase(pos, enc.length());
-            cout << "inputFilename : " << inputFilename << " | outputFilename : " << outputFilename << endl;
-
-        }
-
-        aes_file(inputFilename, outputFilename, password);
-        cout << "Decryption successful." << endl;
-    }
-    else {
-        cerr << "Invalid mode. Use 'encrypt' or 'decrypt'." << endl;
-        return 1;
-    }
+    aes_file(inputFilename, password);
 
     return 0;
 }

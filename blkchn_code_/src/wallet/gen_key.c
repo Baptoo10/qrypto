@@ -10,8 +10,6 @@
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
 
-#include "./walletdat_aes_cpp.h"
-
 #include "../HashFunctions/SHA256/sha256.h"
 #include "../HashFunctions/RIPEMD160/ripemd160.h"
 
@@ -198,10 +196,10 @@ int main(void) {
     gen_address(pk);
 
 /*
- * PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
+ * PAS UTILE POUR LE MOMENT MAIS PEUT ETRE POUR LES TX
+PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
 #ifdef WALLETUNLOCK
     #undef WALLETLOCK
-
 */
     walletdat(pk, mk);
 
@@ -216,7 +214,21 @@ int main(void) {
             response = true;
             printf("You have chosen to encrypt the wallet.dat file.\n");
 
-            aes_file();
+            char userPassword[100];
+
+            printf("Choose a password (100 carac max) : ");
+            scanf(" %s", &userPassword);
+
+            char command[100];
+            sprintf(command, "./cppwalletdat_aes wallet.dat %s", userPassword);
+
+            int result = system(command);
+
+            if (result == 0) {
+                printf("La commande a été exécutée avec succès.\n");
+            } else {
+                printf("Erreur lors de l'exécution de la commande.\n");
+            }
 
         } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' || userResponse == 'NO'){
             response = true;
@@ -227,14 +239,6 @@ int main(void) {
             printf("Invalid input. Please enter 'Y' or 'n'.\n");
         }
     }
-
-
-    //ASK si l'user veut chiffrer le fichier
-/*
-#else if WALLETLOCK
-    #undef WALLETUNLOCK
-#endif
-*/
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 

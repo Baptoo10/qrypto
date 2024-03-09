@@ -33,12 +33,11 @@ gen_key_mode3: gen_key.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
 	  -o $@ $< ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
 
-cppwalletdat_aes: walletdat_aes_cpp.cpp
+walletdat_aes: walletdat_aes.cpp
 	$(CXX) -o $@ $< -lssl -lcrypto
 
 
-walletdat_aes: walletdat_encrypt.c
-	$(CC) -o $@ $< -lssl -lcrypto
+all: gen_key_mode3 walletdat_aes
 
 .PHONY: clean
 clean:
