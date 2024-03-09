@@ -1,13 +1,4 @@
-#include <stddef.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdbool.h>
-
-#include <arpa/inet.h> // Pour la fonction htonl
-#include <math.h>
+#include "config.h"
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
@@ -19,19 +10,18 @@
 
 #include "../base58/base58.h"
 
-#include "encryptwallet.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdbool.h>
 
-#define CRYPTO_PUBLICKEYBYTES 1952
-#define CRYPTO_MASTERSECRETKEYBYTES 4016
-#define SEEDBYTES 32
+#include <arpa/inet.h> // Pour la fonction htonl
+#include <math.h>
 
-#define ADDRESS 44
 
-//A AJOUTER DANS UN FICHIER config.h
-#define MAINNET
-//#define TESTNET
-
-#define CLASSICADDRESS
 
 char *addr_cat_crf = NULL;
 

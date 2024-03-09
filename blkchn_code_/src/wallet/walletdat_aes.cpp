@@ -1,12 +1,8 @@
 using namespace std;
 
-#include "walletdat_aes.h"
+#include "config.h"
 
-#ifdef _WIN32 || _WIN64
-    #include <Windows.h>
-#elif defined(__linux__) || defined(__linux)
-    #include <sys/stat.h>
-#endif
+#include "walletdat_aes.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,8 +12,6 @@ using namespace std;
 #include <string>
 #include <regex>
 
-#define KEY_SIZE 32 // key size = 256 bits
-#define IV_SIZE 16  // initialized vector size = 128 bits
 
 void errFile(const char *errmessage, const char *filename) {
     cerr << "Error : " << errmessage << " " << filename << endl;

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "encryptwallet.h"
 
 #include <stdio.h>
@@ -5,12 +7,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-
-#ifdef _WIN32 || _WIN64
-    #include <Windows.h>
-#elif defined(__linux__) || defined(__linux)
-    #include <sys/stat.h>
-#endif
 
 bool isPswdGood(const char *password);
 void encryptfile();
