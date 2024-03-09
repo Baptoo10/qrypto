@@ -2,6 +2,12 @@ using namespace std;
 
 #include "walletdat_aes_cpp.h"
 
+#ifdef _WIN32 || _WIN64
+    #include <Windows.h>
+#elif defined(__linux__) || defined(__linux)
+    #include <sys/stat.h>
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <openssl/rand.h>
@@ -15,6 +21,15 @@ using namespace std;
 void err(void){
     cerr << "Error" << endl;
     exit(1);
+}
+
+
+void makeFileReadOnly(const string &filename) {
+#ifdef _WIN32
+    SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
+#elifdef __linux__
+    chmod(filename.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
+#endif
 }
 
 void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned char *iv){
@@ -120,9 +135,18 @@ void aes_file(const string &inputFilename, const string &outputFilename, const s
         remove(inputFilename.c_str());
     }
 
+    if (chmod(outputFilename.c_str(), S_IRUSR) != 0) {
+        cerr << "Error setting file permissions." << endl;
+        exit(1);
+    }
+
+
     EVP_CIPHER_CTX_free(ctx);
     inputFile.close();
     outputFile.close();
+
+    makeFileReadOnly(outputFilename);
+
 }
 
 /*

@@ -5,9 +5,12 @@
 #include <string.h>
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
+#include <stdbool.h>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
+
+#include "./walletdat_aes_cpp.h"
 
 #include "../HashFunctions/SHA256/sha256.h"
 #include "../HashFunctions/RIPEMD160/ripemd160.h"
@@ -201,6 +204,31 @@ int main(void) {
 
 */
     walletdat(pk, mk);
+
+    char userResponse;
+    bool response = false;
+
+    while (!response) {
+        printf("Do you want to encrypt your wallet file with AES (recommended) ? [Y/n] ");
+        scanf(" %c", &userResponse);
+
+        if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' || userResponse == 'YES'){
+            response = true;
+            printf("You have chosen to encrypt the wallet.dat file.\n");
+
+            aes_file();
+
+        } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' || userResponse == 'NO'){
+            response = true;
+            printf("You have chosen not to encrypt the wallet.dat file.\n"
+                   "If you change your mind, you can change it by typing command 'encryptwallet'\n");
+        }
+        else {
+            printf("Invalid input. Please enter 'Y' or 'n'.\n");
+        }
+    }
+
+
     //ASK si l'user veut chiffrer le fichier
 /*
 #else if WALLETLOCK
