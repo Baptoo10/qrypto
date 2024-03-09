@@ -115,7 +115,7 @@ void aes_file(const string &inputFilename, const string &password) {
     unsigned char cipherText[1024 + EVP_MAX_BLOCK_LENGTH], clearText[1024 + EVP_MAX_BLOCK_LENGTH];
 
     if (crypttype) { // If the file is encrypted, must decrypt it and write "unlock" on first line
-        // Write "unlock" as the first line
+        // Write "lock" as the first line
         outputFile << "lock" << std::endl;
     } else if(!crypttype){ // If the file is decrypted, must encrypt it and write "lock" on first line
         // Write "unlock" as the first line
@@ -160,8 +160,8 @@ void aes_file(const string &inputFilename, const string &password) {
         remove(inputFilename.c_str());
     }
 
-    //NE FONCTIONNE PAS jsp pk
-    makeFileReadOnly(outputFilename);
+    cout << "outputFilename : " << outputFilename << endl;
+    makeFileReadOnly(outputFilename.c_str());
 
     EVP_CIPHER_CTX_free(ctx);
     inputFile.close();

@@ -28,14 +28,16 @@ AES_HEADERS = $(HEADERS) $(DILITHIUM_PATH)fips202.h $(DILITHIUM_PATH)aes256ctr.h
 HASHFUNCTIONS_SOURCES = $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/RIPEMD160/ripemd160.c
 HASHFUNCTIONS_HEADERS = $(HASHFUN_PATH)/SHA256/sha256.h $(HASHFUN_PATH)/RIPEMD160/ripemd160.h
 
-gen_key_mode3: gen_key.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS) \
+gen_key_mode3: gen_key.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS) \
   $(HASHFUNCTIONS_SOURCES) $(HASHFUNCTIONS_HEADERS)
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
-	  -o $@ $< ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
+	  -o $@ $< encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
+
+encryptwallet: encryptwallet.c
+	$(CC) -o $@ $<
 
 walletdat_aes: walletdat_aes.cpp
 	$(CXX) -o $@ $< -lssl -lcrypto
-
 
 all: gen_key_mode3 walletdat_aes
 

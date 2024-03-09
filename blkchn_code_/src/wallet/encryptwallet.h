@@ -1,0 +1,6 @@
+#ifndef WALLET_ENCRYPTWALLET_H
+#define WALLET_ENCRYPTWALLET_H
+
+void encryptfile();
+
+#endif //WALLET_ENCRYPTWALLET_H

@@ -3,12 +3,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
-#include <stdbool.h>
-#include <regex.h>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
@@ -19,6 +18,8 @@
 #include "../avx2_dilithium3-AES-R/sign.h"
 
 #include "../base58/base58.h"
+
+#include "encryptwallet.h"
 
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
@@ -38,7 +39,20 @@ char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
-bool isPswdGood(const char *password);
+
+bool havewallet(){
+    const char *walletdat = "./wallet.dat";
+    const char *encwalletdat = "./enc_wallet.dat";
+
+    if ((access(walletdat, F_OK) != -1) || (access(encwalletdat, F_OK) != -1)) {
+        printf("You already have a wallet.\n");
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 
 
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
@@ -69,7 +83,7 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
     e58(chainid_ripemd160_fb, chainid_ripemd160_fb_len, &b58_crf, &b58len_crf);
     e58(&addr_type, sizeof(addr_type), &b58_addr, &b58len_addr);
 
-    printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
+    //printf("chainid_ripemd160_fb (base58): %s\n", b58_crf);
     //printf("b58_addr (base58): %s\n", b58_addr);
 
     // Allocate memory for addr_cat_crf
@@ -120,7 +134,7 @@ int gen_address(uint8_t pk[]){
     memcpy(chainid_ripemd160, &order_chain_id, sizeof(order_chain_id));
     memcpy(chainid_ripemd160 + sizeof(order_chain_id), ripemd160_hash, RIPEMD160_DIGEST_LENGTH);
     //printf("chain_id : %08x\n", chain_id);
-    printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, sizeof(chainid_ripemd160)));
+    //printf("chainid_ripemd160 : %s\n", showhex(chainid_ripemd160, sizeof(chainid_ripemd160)));
 
     //DoubleSHA256 on chainid_ripemd160
     sha256_fun(chainid_ripemd160, sha256_hash, 2, sizeof(chainid_ripemd160));
@@ -129,7 +143,7 @@ int gen_address(uint8_t pk[]){
     //Extract 4 first bytes of the DSHA256()
     memcpy(first_bytes, sha256_hash, 4);
 
-    printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
+    //printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
 
 
 #ifdef CLASSICADDRESS
@@ -146,7 +160,7 @@ int gen_address(uint8_t pk[]){
     memcpy(chainid_ripemd160_fb + sizeof(addr_type) + 4 + RIPEMD160_DIGEST_LENGTH, first_bytes, 4);
     memcpy(chainid_ripemd160_fb, chainid_ripemd160, 4 + RIPEMD160_DIGEST_LENGTH);
 
-    printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
+    //printf("chainid_ripemd160_fb : %s\n", showhex(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb)));
 
     encodageb58(chainid_ripemd160_fb, sizeof(chainid_ripemd160_fb), addr_type);
 
@@ -187,105 +201,28 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
 
     // Free memory
     free(addr_cat_crf);
-}
-
-void encryptfile(){
-    char userResponse;
-    bool response = false;
-
-    while (!response) {
-        printf("Do you want to encrypt your wallet file with AES (recommended) ? [Y/n] ");
-        scanf(" %c", &userResponse);
-
-        if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' || userResponse == 'YES'){
-            response = true;
-            printf("You have chosen to encrypt the wallet.dat file.\n");
-
-            const char userPassword[100];
-
-            do {
-                printf("Choose a password (100 characters max) : ");
-                scanf(" %s", &userPassword);
-
-            } while (!isPswdGood(userPassword));
-
-
-            char command[130];
-            sprintf(command, "./walletdat_aes wallet.dat %s", userPassword);
-
-            int result = system(command);
-
-            if (result == 0) {
-                printf("La commande a été exécutée avec succès.\n");
-            } else {
-                printf("Erreur lors de l'exécution de la commande.\n");
-            }
-
-
-        } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' || userResponse == 'NO'){
-            response = true;
-            printf("You have chosen not to encrypt the wallet.dat file.\n"
-                   "If you change your mind, you can change it by typing command 'encryptwallet'\n");
-        }
-        else {
-            printf("Invalid input. Please enter 'Y' or 'n'.\n");
-        }
-    }
 
 }
-
-
-bool isPswdGood(const char *password) {
-
-    bool hasGoodLength = false;
-    bool hasUpperCase = false;
-    bool hasLowerCase = false;
-    bool hasDigit = false;
-    bool hasSpecialChar = false;
-
-    if (strlen(password) >= 12) {
-        hasGoodLength = true;
-    }
-
-    for (const char *ptr = password; *ptr != '\0'; ++ptr) {
-        if (isupper(*ptr)) {
-            hasUpperCase = true;
-        } else if (islower(*ptr)) {
-            hasLowerCase = true;
-        } else if (isdigit(*ptr)) {
-            hasDigit = true;
-        } else if (!isalnum(*ptr)) {
-            hasSpecialChar = true;
-        }
-    }
-
-    if (!hasGoodLength || !hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
-        fprintf(stderr, "The password is not valid. It must contain at least 12 characters, "
-                        "including at least one lowercase letter, one uppercase letter, "
-                        "one number, and one special character.\n\n");
-        return false;
-    } else {
-        return true;
-    }
-}
-
 
 int main(void) {
+
     uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
     uint8_t pk[CRYPTO_PUBLICKEYBYTES];
     uint8_t seed[3 * SEEDBYTES];
 
-    gen_keys(pk, mk, seed);
-    gen_address(pk);
+    if(!havewallet()) {
+        gen_keys(pk, mk, seed);
+        gen_address(pk);
 
-/*
- * PAS UTILE POUR LE MOMENT MAIS PEUT ETRE POUR LES TX
-PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
-#ifdef WALLETUNLOCK
-    #undef WALLETLOCK
-*/
-    walletdat(pk, mk);
-    encryptfile();
+        /*
+         * PAS UTILE POUR LE MOMENT MAIS PEUT ETRE POUR LES TX
+        PENSER A AJOUTER #include walletdatconfig.h OU walletdat_encrypt.h et walletdat_decrypt pour savoir si oui ou non le wallet est unlock
+        #ifdef WALLETUNLOCK
+            #undef WALLETLOCK
+        */
+        walletdat(pk, mk);
+        encryptfile();
+    }
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
@@ -301,7 +238,6 @@ char *showhex(const uint8_t a[], int size) {
 
     return s;
 }
-
 
 
 void print_binary(const uint8_t a[], int size) {
