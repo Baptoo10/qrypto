@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
 #include <stdbool.h>
@@ -36,7 +38,7 @@ char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
-bool isPswdGood_regex(const char *password);
+bool isPswdGood(const char *password);
 
 
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]) {
@@ -199,13 +201,13 @@ void encryptfile(){
             response = true;
             printf("You have chosen to encrypt the wallet.dat file.\n");
 
-            char userPassword[100];
+            const char userPassword[100];
 
             do {
                 printf("Choose a password (100 characters max) : ");
                 scanf(" %s", &userPassword);
 
-            } while (!isPswdGood_regex(userPassword));
+            } while (!isPswdGood(userPassword));
 
 
             char command[130];
@@ -233,44 +235,39 @@ void encryptfile(){
 }
 
 
-bool isPswdGood_regex(const char *password) {
-    regex_t regex;
-    int returncode;
-    char errorbuf[100];
+bool isPswdGood(const char *password) {
 
-    char *posixregex = "^(?=.*[[:lower:]])(?=.*[[:upper:]])(?=.*[[:digit:]])(?=.*[[:punct:]])[[:print:]]{12,}$";
+    bool hasGoodLength = false;
+    bool hasUpperCase = false;
+    bool hasLowerCase = false;
+    bool hasDigit = false;
+    bool hasSpecialChar = false;
 
-    // Compile regex
-    returncode = regcomp(&regex, posixregex, 0);
-
-    if (returncode != 0) {
-        regerror(returncode, &regex, errorbuf, sizeof(errorbuf));
-        fprintf(stderr, "Could not compile regex: %s\n", errorbuf);
-        exit(1);
+    if (strlen(password) >= 12) {
+        hasGoodLength = true;
     }
 
-    // Execute regex
-    returncode = regexec(&regex, password, 0, NULL, 0);
+    for (const char *ptr = password; *ptr != '\0'; ++ptr) {
+        if (isupper(*ptr)) {
+            hasUpperCase = true;
+        } else if (islower(*ptr)) {
+            hasLowerCase = true;
+        } else if (isdigit(*ptr)) {
+            hasDigit = true;
+        } else if (!isalnum(*ptr)) {
+            hasSpecialChar = true;
+        }
+    }
 
-    if (returncode==0) {
-        printf("The password is valid.\n");
-        regfree(&regex);
-        return true; // La regex correspond au mot de passe
-    }
-    else {// (returncode == REG_NOMATCH) {
-        printf("The password is not valid. It must contain at least 12 characters, including at least one"
-               " lowercase letter, one uppercase letter, one number, and one special character.\n\n");
-        regfree(&regex);
-        return false; // La regex ne correspond pas au mot de passe
-    }
-    /*else {
-        regerror(returncode, &regex, errorbuf, sizeof(errorbuf));
-        fprintf(stderr, "Regex match failed: %s\n", errorbuf);
-        regfree(&regex);
+    if (!hasGoodLength || !hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
+        fprintf(stderr, "The password is not valid. It must contain at least 12 characters, "
+                        "including at least one lowercase letter, one uppercase letter, "
+                        "one number, and one special character.\n\n");
         return false;
-    }*/
+    } else {
+        return true;
+    }
 }
-
 
 
 int main(void) {
