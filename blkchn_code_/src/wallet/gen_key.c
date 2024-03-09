@@ -238,34 +238,37 @@ bool isPswdGood_regex(const char *password) {
     int returncode;
     char errorbuf[100];
 
-    const char *pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{12,}$";
+    char *posixregex = "^(?=.*[[:lower:]])(?=.*[[:upper:]])(?=.*[[:digit:]])(?=.*[[:punct:]])[[:print:]]{12,}$";
 
-    returncode = regcomp(&regex, &pattern, REG_EXTENDED); // Utilisation de la variable pattern ici
+    // Compile regex
+    returncode = regcomp(&regex, posixregex, 0);
 
-    if (returncode) {
+    if (returncode != 0) {
         regerror(returncode, &regex, errorbuf, sizeof(errorbuf));
         fprintf(stderr, "Could not compile regex: %s\n", errorbuf);
         exit(1);
     }
 
-    returncode = regexec(&regex, password, 0, NULL, 0); // Utilisation de la variable password ici
+    // Execute regex
+    returncode = regexec(&regex, password, 0, NULL, 0);
 
-    if (!returncode) {
+    if (returncode==0) {
         printf("The password is valid.\n");
         regfree(&regex);
         return true; // La regex correspond au mot de passe
     }
-    else if (returncode == REG_NOMATCH) {
+    else {// (returncode == REG_NOMATCH) {
         printf("The password is not valid. It must contain at least 12 characters, including at least one"
                " lowercase letter, one uppercase letter, one number, and one special character.\n\n");
         regfree(&regex);
         return false; // La regex ne correspond pas au mot de passe
     }
-    else {
+    /*else {
         regerror(returncode, &regex, errorbuf, sizeof(errorbuf));
         fprintf(stderr, "Regex match failed: %s\n", errorbuf);
-        exit(1);
-    }
+        regfree(&regex);
+        return false;
+    }*/
 }
 
 

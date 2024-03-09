@@ -47,7 +47,7 @@ void aes_file(const string &inputFilename, const string &password) {
 
     ifstream inputFile(inputFilename, ios::binary);
     if (!inputFile) {
-        errFile("Cannot open %s", inputFilename.c_str());
+        errFile("Cannot open ", inputFilename.c_str());
     }
 
     string firstLine;
