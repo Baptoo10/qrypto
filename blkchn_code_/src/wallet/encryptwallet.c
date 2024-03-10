@@ -1,7 +1,7 @@
 #include "config.h"
 
 #include "encryptwallet.h"
-#include "wal.h"
+#include "walletdat_aes.h"
 
 #include "../HashFunctions/SHA256/sha256.h"
 #include <openssl/sha.h>

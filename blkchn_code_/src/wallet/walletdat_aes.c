@@ -1,4 +1,4 @@
-#include "wal.h"
+#include "walletdat_aes.h"
 
 #include "config.h"
 

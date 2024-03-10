@@ -4,18 +4,20 @@
 #ifndef WALLET_CONFIG_H
 #define WALLET_CONFIG_H
 
+// OS
 #ifdef _WIN32 || _WIN64
     #include <Windows.h>
 #elif defined(__linux__) || defined(__linux)
     #include <sys/stat.h>
 #endif
 
+// Read Only method
 inline void makeFileReadOnly(const char *filename){
-#ifdef _WIN32
-    SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
-#elif defined(__linux__) || defined(__linux)
-    chmod(filename, S_IRUSR | S_IRGRP | S_IROTH);
-#endif
+    #ifdef _WIN32
+        SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
+    #elif defined(__linux__) || defined(__linux)
+        chmod(filename, S_IRUSR | S_IRGRP | S_IROTH);
+    #endif
 }
 
 // DILITHIUM-3-AES-CTR-R (gen_key.c)

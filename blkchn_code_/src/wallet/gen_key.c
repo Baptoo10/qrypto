@@ -22,7 +22,7 @@
 #include "../base58/base58.h"
 
 #include "encryptwallet.h"
-#include "wal.h"
+#include "walletdat_aes.h"
 
 uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
 uint8_t pk[CRYPTO_PUBLICKEYBYTES];
