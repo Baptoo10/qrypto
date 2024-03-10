@@ -13,64 +13,84 @@
 #include <stdbool.h>
 
 bool isPswdGood(const char *password);
-void encryptfile();
+void encryptfile(bool HasAlreadyBeenCipher);
 
+char *showhex2(const uint8_t a[], int size);
 
-void encryptfile(){
+void encryptfile(bool HasAlreadyBeenCipher){
 
     char userResponse;
     bool response = false;
 
     while (!response) {
-        printf("Do you want to encrypt your wallet file with AES (recommended) ? [Y/n] ");
-        scanf(" %s", &userResponse);
 
-        if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' || userResponse == 'YES'){
-            response = true;
-            printf("You have chosen to encrypt the wallet.dat file.\n");
+        if(!HasAlreadyBeenCipher) {
+            printf("Do you want to encrypt your wallet file with AES (recommended) ? [Y/n] ");
+            scanf(" %s", &userResponse);
 
-            const char userPassword[100];
+            if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' ||
+                userResponse == 'YES') {
+                response = true;
+                printf("You have chosen to encrypt the wallet.dat file.\n");
 
-            do {
-                printf("Choose a password (100 characters max) : ");
-                scanf(" %s", &userPassword);
+                char userPassword[100];
 
-            } while (!isPswdGood(userPassword));
+                do {
+                    printf("Choose a password (100 characters max) : ");
+                    scanf(" %s", &userPassword);
 
-            unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
+                } while (!isPswdGood(userPassword));
 
-            sha256_fun(userPassword, sha256_hash, 1, sizeof(userPassword));
-            printf("sha256_hash ::: %s", sha256_hash);
+                sha256_fun((uint8_t *) userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
 
-            aes_file("wallet.dat", sha256_hash);
+                char *hashpassword = showhex2(sha256_hash, SHA256_DIGEST_LENGTH);
 
-/*
-            char command[130];
-            sprintf(command, "./walletdat_aes wallet.dat %s", userPassword);
+                printf("sha256_hash ::: %s\n", hashpassword);
 
-            int result = system(command);
+                aes_file("wallet.dat", hashpassword);
+                free(hashpassword);
 
-            if (result == 0) {
-                printf("La commande a été exécutée avec succès.\n");
-            } else {
-                printf("Erreur lors de l'exécution de la commande.\n");
+            } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
+                       userResponse == 'NO') {
+                response = true;
+                printf("You have chosen not to encrypt the wallet.dat file.\n"
+                       "If you change your mind, you can change it by typing command './gen_key_mode3'\n");
+
+                makeFileReadOnly("wallet.dat");
             }
-*/
-
-        } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' || userResponse == 'NO'){
-            response = true;
-            printf("You have chosen not to encrypt the wallet.dat file.\n"
-                   "If you change your mind, you can change it by typing command './gen_key_mode3'\n");
-
-            makeFileReadOnly("wallet.dat");
+            else {
+                printf("Invalid input. Please enter 'Y' or 'n'.\n");
+            }
         }
-        else {
-            printf("Invalid input. Please enter 'Y' or 'n'.\n");
+        else{
+            char userPassword[100];
+
+            printf("If you want to make your wallet encrypted, please, enter your password (max 100 charac) : ");
+            scanf(" %s", &userPassword);
+            sha256_fun((uint8_t *) userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
+
+            char *hashpassword = showhex2(sha256_hash, SHA256_DIGEST_LENGTH);
+
+            printf("sha256_hash ::: %s\n", hashpassword);
+
+            aes_file("wallet.dat", hashpassword);
+            free(hashpassword);
+
+            exit(0);
         }
+
     }
 
 }
 
+char *showhex2(const uint8_t a[], int size) {
+    char *s = (char *)malloc(size * 2 + 1);
+
+    for (int i = 0; i < size; i++)
+        sprintf(s + i * 2, "%02x", a[i]);
+
+    return s;
+}
 
 bool isPswdGood(const char *password) {
 

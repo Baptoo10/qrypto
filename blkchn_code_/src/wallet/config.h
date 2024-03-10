@@ -1,5 +1,5 @@
-//REGARDER INMPLEMENTATION walletdat_aes.cpp dans gen_key.c sans le main peutêtre
-
+#include <openssl/sha.h>
+#include <openssl/ripemd.h>
 
 #ifndef WALLET_CONFIG_H
 #define WALLET_CONFIG_H
@@ -37,5 +37,8 @@ inline void makeFileReadOnly(const char *filename){
 #define KEY_SIZE 32 // key size = 256 bits
 #define IV_SIZE 16  // initialized vector size = 128 bits
 
+// Hash functions
+extern unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
+extern unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
 
 #endif //WALLET_CONFIG_H

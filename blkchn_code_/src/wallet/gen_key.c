@@ -27,9 +27,9 @@
 uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
 uint8_t pk[CRYPTO_PUBLICKEYBYTES];
 uint8_t seed[3 * SEEDBYTES];
+
 unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
 unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
-
 
 char *addr_cat_crf = NULL;
 
@@ -222,11 +222,25 @@ void allfunctions(){
             #undef WALLETLOCK
         */
         walletdat(pk, mk);
-        encryptfile();
+        encryptfile(false);
     }
     else{
         if(!cipherwallet){
-            encryptfile();
+
+            FILE *inputFile = fopen("wallet.dat", "rb");
+            if (!inputFile) {
+                errFile("Cannot open ", "wallet.dat");
+            }
+
+            char firstLine[300];
+            fgets(firstLine, sizeof(firstLine), inputFile);
+
+            if(strstr(firstLine, "NOPASSWORD")){
+                encryptfile(false);
+            }else{
+                encryptfile(true);
+            }
+
         }
         else{
             bool response = false;
@@ -242,14 +256,19 @@ void allfunctions(){
 
                     response=true;
 
-                    char *userPassword[100];
+                    char userPassword[100];
 
-                    printf("\nPlease, enter your password : ");
+                    printf("\nPlease, enter your password (max 100 charac) : ");
                     scanf("%s", userPassword);
 
-                    sha256_fun(userPassword, sha256_hash, 1, sizeof(userPassword));
-                    printf("sha256_hash ::: %s", sha256_hash);
-                    aes_file("enc_wallet.dat", sha256_hash);
+                    sha256_fun((uint8_t *)userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
+
+                    char *hashpassword = showhex(sha256_hash, SHA256_DIGEST_LENGTH);
+                    printf("sha256_hash ::: %s\n", hashpassword);
+
+                    aes_file("enc_wallet.dat", hashpassword);
+                    free(hashpassword);
+
                 } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
                            userResponse == 'NO') {
                     response=true;

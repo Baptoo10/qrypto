@@ -30,8 +30,6 @@ void deriveKeyFromPassword(const char *password, unsigned char *key, unsigned ch
 
 void aes_file(const char *inputFilename, const char *password) {
 
-    //printf("password : %s\n", password);
-
     FILE *inputFile = fopen(inputFilename, "rb");
     if (!inputFile) {
         errFile("Cannot open ", inputFilename);
@@ -42,11 +40,10 @@ void aes_file(const char *inputFilename, const char *password) {
 
     char firstLine[300];
     fgets(firstLine, sizeof(firstLine), inputFile);
-    printf("\nfirst line : %s\n", firstLine);
 
     if(!strstr(firstLine, "NOPASSWORD")){
         if(!strstr(firstLine, password)){
-            printf("Wrong password");
+            printf("Wrong password\n");
             exit(1);
         }
     }
@@ -76,14 +73,10 @@ void aes_file(const char *inputFilename, const char *password) {
         exit(1);
     }
 
-    printf("coucou1\n");
-
     FILE *outputFile = fopen(outputFilename, "wb");
     if (!outputFile){
         errFile("Cannot open ", outputFilename);
     }
-
-    printf("%d", crypttype);
 
     // Generate key and iv from password
     unsigned char key[KEY_SIZE];
@@ -110,7 +103,6 @@ void aes_file(const char *inputFilename, const char *password) {
     unsigned char buffer[1024];
     int bytesRead, cipherTextLength, clearTextLength;
     unsigned char cipherText[1024 + EVP_MAX_BLOCK_LENGTH], clearText[1024 + EVP_MAX_BLOCK_LENGTH];
-    printf("coucou2\n");
 
     if (crypttype) { // If the file is encrypted, must decrypt it and write "unlock" on the first line
         // Write "lock" as the first line

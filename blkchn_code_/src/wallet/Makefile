@@ -42,6 +42,9 @@ walletdat_aes: walletdat_aes.cpp
 wal: wal.c
 	$(CC) -o $@ $< -lssl -lcrypto
 
+sha: ../HashFunctions/SHA256/sha256.c
+	$(CC) $(CFLAGS) -o $@ $< -lssl -lcrypto
+
 all: gen_key_mode3 walletdat_aes
 
 .PHONY: clean
