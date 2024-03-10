@@ -26,8 +26,6 @@ stdint.h
 immintrin.h
 -
 
-/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/config.h
-
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/fips202.h
 stddef.h
 -
@@ -84,7 +82,17 @@ stdint.h
 stddef.h
 -
 
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/config.h
+Windows.h
+-
+sys/stat.h
+-
+
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/encryptwallet.h
+
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/gen_key.c
+config.h
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/config.h
 stddef.h
 -
 stdio.h
@@ -94,6 +102,10 @@ stdint.h
 stdlib.h
 -
 string.h
+-
+unistd.h
+-
+stdbool.h
 -
 arpa/inet.h
 -
@@ -111,4 +123,6 @@ openssl/ripemd.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/avx2_dilithium3-AES-R/sign.h
 ../base58/base58.h
 /mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/base58/base58.h
+encryptwallet.h
+/mnt/d/BAPTISTE/Informatique/Cours/Cours_Master_1/Annee_Projets/Projet_CRYPTIS/code/blkchn_code_/src/wallet/encryptwallet.h
 

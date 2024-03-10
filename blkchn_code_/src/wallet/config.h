@@ -10,6 +10,14 @@
     #include <sys/stat.h>
 #endif
 
+inline void makeFileReadOnly(const char *filename){
+#ifdef _WIN32
+    SetFileAttributes(filename.c_str(), FILE_ATTRIBUTE_READONLY);
+#elif defined(__linux__) || defined(__linux)
+    chmod(filename, S_IRUSR | S_IRGRP | S_IROTH);
+#endif
+}
+
 // DILITHIUM-3-AES-CTR-R (gen_key.c)
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016

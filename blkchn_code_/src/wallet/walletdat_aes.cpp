@@ -12,13 +12,12 @@ using namespace std;
 #include <string>
 #include <regex>
 
-
 void errFile(const char *errmessage, const char *filename) {
     cerr << "Error : " << errmessage << " " << filename << endl;
     exit(1);
 }
 
-void err(void ) {
+void err(void) {
     exit(1);
 }
 
@@ -30,8 +29,10 @@ void makeFileReadOnly(const string &filename) {
     #endif
 }
 
-void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned char *iv){
-    if (EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), nullptr, reinterpret_cast<const unsigned char *>(password.c_str()), password.length(), 1, key, iv) != KEY_SIZE) {
+void deriveKeyFromPassword(const string &password, unsigned char *key, unsigned char *iv) {
+    if (EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), nullptr,
+                       reinterpret_cast<const unsigned char *>(password.c_str()), password.length(), 1, key, iv) !=
+        KEY_SIZE) {
         err();
     }
 }
@@ -69,8 +70,7 @@ void aes_file(const string &inputFilename, const string &password) {
         }
 
         cout << "Decryption successful." << endl;
-    }
-    else {
+    } else {
         cerr << "Invalid mode found in the file." << endl;
         exit(1);
     }
@@ -97,7 +97,7 @@ void aes_file(const string &inputFilename, const string &password) {
         if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
             err();
         }
-    } else if (!crypttype){
+    } else if (!crypttype) {
         // Initialization of the decipher context
         if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
             err();
@@ -111,7 +111,7 @@ void aes_file(const string &inputFilename, const string &password) {
     if (crypttype) { // If the file is encrypted, must decrypt it and write "unlock" on first line
         // Write "lock" as the first line
         outputFile << "lock" << std::endl;
-    } else if(!crypttype){ // If the file is decrypted, must encrypt it and write "lock" on first line
+    } else if (!crypttype) { // If the file is decrypted, must encrypt it and write "lock" on first line
         // Write "unlock" as the first line
         outputFile << "unlock" << std::endl;
     }
@@ -123,7 +123,7 @@ void aes_file(const string &inputFilename, const string &password) {
             }
             // Writing the ciphertext in the outputFile
             outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
-        } else if(!crypttype){
+        } else if (!crypttype) {
             if (EVP_DecryptUpdate(ctx, clearText, &clearTextLength, buffer, bytesRead) != 1) {
                 err();
             }
@@ -142,7 +142,7 @@ void aes_file(const string &inputFilename, const string &password) {
         outputFile.write(reinterpret_cast<const char *>(cipherText), cipherTextLength);
 
         remove(inputFilename.c_str());
-    } else if(!crypttype){
+    } else if (!crypttype) {
         // Ending the decryption
         if (EVP_DecryptFinal_ex(ctx, clearText, &clearTextLength) != 1) {
             err();
@@ -162,6 +162,7 @@ void aes_file(const string &inputFilename, const string &password) {
     outputFile.close();
 
 }
+
 
 int main(int argc, char *argv[]) {
 

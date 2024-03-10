@@ -22,9 +22,18 @@
 #include "../base58/base58.h"
 
 #include "encryptwallet.h"
+#include "wal.h"
+
+uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
+uint8_t pk[CRYPTO_PUBLICKEYBYTES];
+uint8_t seed[3 * SEEDBYTES];
+unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
+unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
 
 
 char *addr_cat_crf = NULL;
+
+bool cipherwallet;
 
 char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
@@ -35,8 +44,14 @@ bool havewallet(){
     const char *walletdat = "./wallet.dat";
     const char *encwalletdat = "./enc_wallet.dat";
 
-    if ((access(walletdat, F_OK) != -1) || (access(encwalletdat, F_OK) != -1)) {
+    if (access(walletdat, F_OK) != -1) {
         printf("You already have a wallet.\n");
+        cipherwallet=false;
+        return true;
+    }
+    else if(access(encwalletdat, F_OK) != -1){
+        printf("You already have a wallet (cipher one).\n");
+        cipherwallet=true;
         return true;
     }
     else{
@@ -100,8 +115,7 @@ void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_f
 
 // method to generate the address given a pk
 int gen_address(uint8_t pk[]){
-    unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
-    unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
+
     unsigned char first_bytes[4];
 
     // Perform first hash level with SHA256() on pk
@@ -168,7 +182,7 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
     }
 
     // State of the file
-    fprintf(fPtr, "unlock\n");
+    fprintf(fPtr, "unlock | NOPASSWORD\n");
 
     // Writing bruts values
     fprintf(fPtr, "brut values : \n");
@@ -194,13 +208,9 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
     free(addr_cat_crf);
 
 }
+void allfunctions();
 
-int main(void) {
-
-    uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
-    uint8_t pk[CRYPTO_PUBLICKEYBYTES];
-    uint8_t seed[3 * SEEDBYTES];
-
+void allfunctions(){
     if(!havewallet()) {
         gen_keys(pk, mk, seed);
         gen_address(pk);
@@ -214,6 +224,50 @@ int main(void) {
         walletdat(pk, mk);
         encryptfile();
     }
+    else{
+        if(!cipherwallet){
+            encryptfile();
+        }
+        else{
+            bool response = false;
+            char userResponse;
+
+            while(!response) {
+
+                printf("\nDo you want to decipher it ? [Y/n] ");
+                scanf(" %s", &userResponse);
+
+                if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' ||
+                    userResponse == 'YES') {
+
+                    response=true;
+
+                    char *userPassword[100];
+
+                    printf("\nPlease, enter your password : ");
+                    scanf("%s", userPassword);
+
+                    sha256_fun(userPassword, sha256_hash, 1, sizeof(userPassword));
+                    printf("sha256_hash ::: %s", sha256_hash);
+                    aes_file("enc_wallet.dat", sha256_hash);
+                } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
+                           userResponse == 'NO') {
+                    response=true;
+                    printf("You have chosen not to decipher your enc_wallet.dat file.\n"
+                           "If you change your mind, you can change it by typing command './gen_key_mode3'\n");
+                } else {
+                    printf("Invalid input. Please enter 'Y' or 'n'.\n");
+                }
+            }
+        }
+
+    }
+}
+int main(void) {
+
+
+    allfunctions();
+
 
 // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
