@@ -1,15 +1,5 @@
 #include "config.h"
 
-#include <openssl/sha.h>
-#include <openssl/ripemd.h>
-
-#include "../HashFunctions/SHA256/sha256.h"
-#include "../HashFunctions/RIPEMD160/ripemd160.h"
-
-#include "../avx2_dilithium3-AES-R/sign.h"
-
-#include "../base58/base58.h"
-
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -21,6 +11,17 @@
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
 
+#include <openssl/sha.h>
+#include <openssl/ripemd.h>
+
+#include "../HashFunctions/SHA256/sha256.h"
+#include "../HashFunctions/RIPEMD160/ripemd160.h"
+
+#include "../avx2_dilithium3-AES-R/sign.h"
+
+#include "../base58/base58.h"
+
+#include "encryptwallet.h"
 
 
 char *addr_cat_crf = NULL;
