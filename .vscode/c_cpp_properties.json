@@ -1,0 +1,49 @@
+{
+  "configurations": [
+    {
+      "name": "windows-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "compilerPath": "gcc",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "windows-gcc-x64",
+      "compilerArgs": [
+        ""
+      ]
+    },
+    {
+      "name": "windows-gcc-x64",
+      "includePath": [
+        "c:/Users/eleon/Documents/projet_blockchain/qrypto/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "mergeConfigurations": false,
+      "browse": {
+        "path": [
+          "c:/Users/eleon/Documents/projet_blockchain/qrypto/**",
+          "c:/Users/eleon/Documents/projet_blockchain/qrypto"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "compilerPath": "C:\\Program Files\\JetBrains\\CLion 2023.3.4\\bin\\mingw\\bin\\gcc.exe"
+    },
+    {
+      "name": "windows-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ]
+    }
+  ],
+  "version": 4
+}
