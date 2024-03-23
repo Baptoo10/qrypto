@@ -34,6 +34,11 @@ gen_key_mode3: gen_key.c walletdat_aes.c encryptwallet.c ../base58/base58.c $(DI
 	  -o $@ $< walletdat_aes.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
 
 
+sha: $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/SHA256/sha256.h
+	$(CC) $(CFLAGS) -o $@ $< -lssl -lcrypto
+
+
+
 all: gen_key_mode3
 
 .PHONY: clean

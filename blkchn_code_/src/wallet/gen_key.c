@@ -10,8 +10,8 @@
 
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
-
 #include <openssl/sha.h>
+
 #include <openssl/ripemd.h>
 
 #include "../HashFunctions/SHA256/sha256.h"
@@ -39,6 +39,7 @@ char *showhex(const uint8_t a[], int size);
 void print_binary(const uint8_t a[], int size);
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
+void allfunctions();
 
 bool havewallet(){
     const char *walletdat = "./wallet.dat";
@@ -208,7 +209,7 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
     free(addr_cat_crf);
 
 }
-void allfunctions();
+
 
 void allfunctions(){
     if(!havewallet()) {

@@ -2,10 +2,13 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
-
+#include <stdlib.h>
 #include <openssl/sha.h>
 
-int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds, size_t data_len) {
+//unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
+//char *showhex2(const uint8_t a[], int size);
+
+int sha256_fun(uint8_t data[], unsigned char *hash, int rounds, size_t data_len) {
 
     for (int i = 0; i < rounds; ++i) {
         // Definition de la structure de donnees SHA256_CTX afin de stocker
@@ -41,3 +44,26 @@ int sha256_fun(uint8_t data[], unsigned char *hash, uint8_t rounds, size_t data_
 
     return 0;
 }
+/*
+int main(void){
+    int nombre_caractere;
+
+    char* bonjour = "Bonjour";
+
+    //SIZEOF tableau dynamique    char * bjr = (char*)malloc(sizeof(char) * nombre_caractere);
+
+    sha256_fun(bonjour, sha256_hash, 1000000000, sizeof(bonjour)-1);
+    printf("\nsha256_hash : %s\n", showhex2(sha256_hash, SHA256_DIGEST_LENGTH));
+    return 0;
+}
+
+
+char *showhex2(const uint8_t a[], int size) {
+    char *s = (char *)malloc(size * 2 + 1);
+
+    for (int i = 0; i < size; i++)
+        sprintf(s + i * 2, "%02x", a[i]);
+
+    return s;
+}
+*/

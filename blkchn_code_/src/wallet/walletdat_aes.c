@@ -160,6 +160,7 @@ void aes_file(const char *inputFilename, const char *password) {
     fclose(inputFile);
     fclose(outputFile);
 }
+
 /*
 int main(int argc, char *argv[]) {
 
