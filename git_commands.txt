@@ -10,7 +10,7 @@ ________________________________________________________________________________
 
 
 Probème pour avoir toutes les branches alors que vous avez tout le repo en local ? => L'intégralité du repo est bien téléchargé, seulement, toutes les branches ne sont pas toujours nécessairement présentes, donc :
-- git -a branch
+- git branch -a
 - git checkout NOM_DE_LA_BRANCHE_A_AJOUTER_AU_REPO_LOCAL
 
 __________________________________________________________________________________________________________________________________________________________

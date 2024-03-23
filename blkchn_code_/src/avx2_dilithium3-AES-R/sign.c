@@ -28,19 +28,22 @@ static inline void polyvec_matrix_expand_row(polyvecl mat[K], const uint8_t rho[
 }
 #endif
 
+
 /*************************************************
-* Name:        crypto_sign_keypair
+* Name:        crypto_mk_seed
 *
-* Description: Generates public and private key.
+* Description: Generates master private key and seed.
 *
 * Arguments:   - uint8_t *pk: pointer to output public key (allocated
 *                             array of CRYPTO_PUBLICKEYBYTES bytes)
-*              - uint8_t *sk: pointer to output private key (allocated
-*                             array of CRYPTO_SECRETKEYBYTES bytes)
+*              - uint8_t *masterkey: pointer to output master private key (allocated
+*                             array of CRYPTO_MASTERKEYBYTES bytes)
+*              - uint8_t *seed: pointer to output seed (allocated
+*                             array of SEEDBYTES bytes)
 *
 * Returns 0 (success)
 **************************************************/
-int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
+int crypto_mk_seed(uint8_t *masterkey, uint8_t *pk, uint8_t *seed) {
   unsigned int i;
   __attribute__((aligned(32)))
   uint8_t seedbuf[3*SEEDBYTES];
@@ -54,6 +57,123 @@ int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
   /* Get randomness for rho, rhoprime and key */
   randombytes(seedbuf, SEEDBYTES);
   shake256(seedbuf, 3*SEEDBYTES, seedbuf, SEEDBYTES);
+  memcpy(seed, seedbuf, 3 * SEEDBYTES);
+
+  rho = seedbuf;
+  rhoprime = seedbuf + SEEDBYTES;
+  key = seedbuf + 2*SEEDBYTES;
+
+  /* Store rho, key */
+  for(i = 0; i < SEEDBYTES; ++i)
+    pk[i] = rho[i];
+  for(i = 0; i < SEEDBYTES; ++i)
+    masterkey[i] = rho[i];
+  for(i = 0; i < SEEDBYTES; ++i)
+    masterkey[SEEDBYTES + i] = key[i];
+
+  /* Sample short vectors s1 and s2 */
+#ifdef DILITHIUM_USE_AES
+  uint64_t nonce = 0;
+  aes256ctr_ctx aesctx;
+  aes256ctr_init(&aesctx, rhoprime, nonce++);
+  for(i = 0; i < L; ++i) {
+    poly_uniform_eta_preinit(&s1.vec[i], &aesctx);
+    aesctx.n = _mm_loadl_epi64((__m128i *)&nonce);
+    nonce++;
+  }
+  for(i = 0; i < K; ++i) {
+    poly_uniform_eta_preinit(&s2.vec[i], &aesctx);
+    aesctx.n = _mm_loadl_epi64((__m128i *)&nonce);
+    nonce++;
+  }
+#elif K == 4 && L == 4
+  poly_uniform_eta_4x(&s1.vec[0], &s1.vec[1], &s1.vec[2], &s1.vec[3], rhoprime, 0, 1, 2, 3);
+  poly_uniform_eta_4x(&s2.vec[0], &s2.vec[1], &s2.vec[2], &s2.vec[3], rhoprime, 4, 5, 6, 7);
+#elif K == 6 && L == 5
+  poly_uniform_eta_4x(&s1.vec[0], &s1.vec[1], &s1.vec[2], &s1.vec[3], rhoprime, 0, 1, 2, 3);
+  poly_uniform_eta_4x(&s1.vec[4], &s2.vec[0], &s2.vec[1], &s2.vec[2], rhoprime, 4, 5, 6, 7);
+  poly_uniform_eta_4x(&s2.vec[3], &s2.vec[4], &s2.vec[5], &t0, rhoprime, 8, 9, 10, 11);
+#elif K == 8 && L == 7
+  poly_uniform_eta_4x(&s1.vec[0], &s1.vec[1], &s1.vec[2], &s1.vec[3], rhoprime, 0, 1, 2, 3);
+  poly_uniform_eta_4x(&s1.vec[4], &s1.vec[5], &s1.vec[6], &s2.vec[0], rhoprime, 4, 5, 6, 7);
+  poly_uniform_eta_4x(&s2.vec[1], &s2.vec[2], &s2.vec[3], &s2.vec[4], rhoprime, 8, 9, 10, 11);
+  poly_uniform_eta_4x(&s2.vec[5], &s2.vec[6], &s2.vec[7], &t0, rhoprime, 12, 13, 14, 15);
+#else
+#error
+#endif
+
+  /* Pack secret vectors */
+  for(i = 0; i < L; i++)
+    polyeta_pack(masterkey + 2*SEEDBYTES + CRHBYTES + i*POLYETA_PACKEDBYTES, &s1.vec[i]);
+  for(i = 0; i < K; i++)
+    polyeta_pack(masterkey + 2*SEEDBYTES + CRHBYTES + (L + i)*POLYETA_PACKEDBYTES, &s2.vec[i]);
+
+  /* Transform s1 */
+  polyvecl_ntt(&s1);
+
+  for(i = 0; i < K; i++) {
+    /* Expand matrix row */
+    polyvec_matrix_expand_row(mat, rho, i);
+
+    /* Compute inner-product */
+    polyvecl_pointwise_acc_montgomery(&t1, &mat[i], &s1);
+    poly_invntt_tomont(&t1);
+
+    /* Add error polynomial */
+    poly_add(&t1, &t1, &s2.vec[i]);
+
+    /* Round t and pack t1, t0 */
+    poly_caddq(&t1);
+    poly_power2round(&t1, &t0, &t1);
+    polyt1_pack(pk + SEEDBYTES + i*POLYT1_PACKEDBYTES, &t1);
+    polyt0_pack(masterkey + 2*SEEDBYTES + CRHBYTES + (L+K)*POLYETA_PACKEDBYTES + i*POLYT0_PACKEDBYTES, &t0);
+  }
+
+  /* Compute CRH(rho, t1) and store in secret key */
+  crh(tr, pk, CRYPTO_PUBLICKEYBYTES);
+  for(i = 0; i < CRHBYTES; ++i)
+    masterkey[2*SEEDBYTES + i] = tr[i];
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************
+* Name:        crypto_sign_keypair
+*
+* Description: Generates public and private key.
+*
+* Arguments:   - uint8_t *pk: pointer to output public key (allocated
+*                             array of CRYPTO_PUBLICKEYBYTES bytes)
+*              - uint8_t *sk: pointer to output private key (allocated
+*                             array of CRYPTO_SECRETKEYBYTES bytes)
+*
+* Returns 0 (success)
+**************************************************/
+int crypto_sign_keypair(uint8_t *pk, uint8_t *sk, uint8_t *seed) {
+  unsigned int i;
+  __attribute__((aligned(32)))
+  uint8_t seedbuf[3*SEEDBYTES];
+  __attribute__((aligned(32)))
+  uint8_t tr[CRHBYTES];
+  const uint8_t *rho, *rhoprime, *key;
+  polyvecl mat[K], s1;
+  polyveck s2;
+  poly t1, t0;
+
+  /* Get randomness for rho, rhoprime and key */
+  randombytes(seedbuf, SEEDBYTES);
+  shake256(seedbuf, 3*SEEDBYTES, seedbuf, SEEDBYTES);
+  memcpy(seed, seedbuf, 3 * SEEDBYTES);
   rho = seedbuf;
   rhoprime = seedbuf + SEEDBYTES;
   key = seedbuf + 2*SEEDBYTES;

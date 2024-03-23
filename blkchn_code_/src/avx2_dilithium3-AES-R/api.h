@@ -10,7 +10,10 @@
 #endif
 
 #define crypto_sign_keypair DILITHIUM_NAMESPACE(_keypair)
-int crypto_sign_keypair(unsigned char *pk, unsigned char *sk);
+int crypto_sign_keypair(uint8_t *pk, uint8_t *sk, unsigned char *seed);
+
+#define crypto_mk_seed DILITHIUM_NAMESPACE(_keypair_seed)
+int crypto_mk_seed(unsigned char *masterkey, unsigned char *pk, unsigned char *seed);
 
 #define crypto_sign DILITHIUM_NAMESPACE()
 int crypto_sign(unsigned char *sm, unsigned long long *smlen,

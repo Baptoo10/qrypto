@@ -1,0 +1,6 @@
+Wallet :
+1) Construction des addresses
+2) Stockage
+3) passphrase
+4) Interface
+5) Dérivation (BIP 032 : https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki / https://github.com/bitcoin/bitcoin/blob/ba907f96ad37c09c49c0e1532fad118fcb8dd4a8/src/crypto/hmac_sha512.h#L14)
