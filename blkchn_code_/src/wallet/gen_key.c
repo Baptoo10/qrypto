@@ -21,6 +21,8 @@
 
 #include "../base58/base58.h"
 
+#include "../print_type/printtype.h"
+
 #include "encryptwallet.h"
 #include "walletdat_aes.h"
 
@@ -35,8 +37,7 @@ char *addr_cat_crf = NULL;
 
 bool cipherwallet;
 
-char *showhex(const uint8_t a[], int size);
-void print_binary(const uint8_t a[], int size);
+
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
 void allfunctions();
@@ -294,22 +295,3 @@ int main(void) {
     return 0;
 }
 
-
-char *showhex(const uint8_t a[], int size) {
-    char *s = (char *)malloc(size * 2 + 1);
-
-    for (int i = 0; i < size; i++)
-        sprintf(s + i * 2, "%02x", a[i]);
-
-    return s;
-}
-
-
-void print_binary(const uint8_t a[], int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 7; j >= 0; j--) {
-            printf("%d", (a[i] >> j) & 1);
-        }
-    }
-    printf("\n");
-}

@@ -4,6 +4,8 @@
 #include "walletdat_aes.h"
 
 #include "../HashFunctions/SHA256/sha256.h"
+#include "../print_type/printtype.h"
+
 #include <openssl/sha.h>
 
 #include <stdio.h>
@@ -11,11 +13,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+char *showhex(const uint8_t a[], int size);
 
 bool isPswdGood(const char *password);
 void encryptfile(bool HasAlreadyBeenCipher);
 
-char *showhex2(const uint8_t a[], int size);
+
 
 void encryptfile(bool HasAlreadyBeenCipher){
 
@@ -43,7 +46,7 @@ void encryptfile(bool HasAlreadyBeenCipher){
 
                 sha256_fun((uint8_t *) userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
 
-                char *hashpassword = showhex2(sha256_hash, SHA256_DIGEST_LENGTH);
+                char *hashpassword = showhex(sha256_hash, SHA256_DIGEST_LENGTH);
 
                 printf("sha256_hash ::: %s\n", hashpassword);
 
@@ -69,7 +72,7 @@ void encryptfile(bool HasAlreadyBeenCipher){
             scanf(" %s", &userPassword);
             sha256_fun((uint8_t *) userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
 
-            char *hashpassword = showhex2(sha256_hash, SHA256_DIGEST_LENGTH);
+            char *hashpassword = showhex(sha256_hash, SHA256_DIGEST_LENGTH);
 
             printf("sha256_hash ::: %s\n", hashpassword);
 
@@ -81,15 +84,6 @@ void encryptfile(bool HasAlreadyBeenCipher){
 
     }
 
-}
-
-char *showhex2(const uint8_t a[], int size) {
-    char *s = (char *)malloc(size * 2 + 1);
-
-    for (int i = 0; i < size; i++)
-        sprintf(s + i * 2, "%02x", a[i]);
-
-    return s;
 }
 
 bool isPswdGood(const char *password) {

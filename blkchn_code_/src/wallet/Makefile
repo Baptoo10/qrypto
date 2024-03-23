@@ -14,7 +14,7 @@ HASHFUN_PATH = ../HashFunctions/
 SOURCES = $(DILITHIUM_PATH)sign.c $(DILITHIUM_PATH)packing.c $(DILITHIUM_PATH)polyvec.c $(DILITHIUM_PATH)poly.c $(DILITHIUM_PATH)ntt.S \
   $(DILITHIUM_PATH)invntt.S $(DILITHIUM_PATH)pointwise.S $(DILITHIUM_PATH)consts.c $(DILITHIUM_PATH)rejsample.c $(DILITHIUM_PATH)rounding.c
 
-HEADERS = ./walletdat_aes.h ./config.h ../base58/base58.h $(DILITHIUM_PATH)config.h $(DILITHIUM_PATH)params.h $(DILITHIUM_PATH)api.h $(DILITHIUM_PATH)sign.h $(DILITHIUM_PATH)packing.h \
+HEADERS = ../print_type/printtype.h ./walletdat_aes.h ./config.h ../base58/base58.h $(DILITHIUM_PATH)config.h $(DILITHIUM_PATH)params.h $(DILITHIUM_PATH)api.h $(DILITHIUM_PATH)sign.h $(DILITHIUM_PATH)packing.h \
   $(DILITHIUM_PATH)polyvec.h $(DILITHIUM_PATH)poly.h $(DILITHIUM_PATH)ntt.h $(DILITHIUM_PATH)consts.h \
   $(DILITHIUM_PATH)rejsample.h $(DILITHIUM_PATH)rounding.h $(DILITHIUM_PATH)symmetric.h $(DILITHIUM_PATH)randombytes.h
 
@@ -28,10 +28,10 @@ AES_HEADERS = $(HEADERS) $(DILITHIUM_PATH)fips202.h $(DILITHIUM_PATH)aes256ctr.h
 HASHFUNCTIONS_SOURCES = $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/RIPEMD160/ripemd160.c
 HASHFUNCTIONS_HEADERS = $(HASHFUN_PATH)/SHA256/sha256.h $(HASHFUN_PATH)/RIPEMD160/ripemd160.h
 
-gen_key_mode3: gen_key.c walletdat_aes.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS) \
+gen_key_mode3: gen_key.c ../print_type/printtype.c walletdat_aes.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS) \
   $(HASHFUNCTIONS_SOURCES) $(HASHFUNCTIONS_HEADERS)
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
-	  -o $@ $< walletdat_aes.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
+	  -o $@ $< ../print_type/printtype.c walletdat_aes.c encryptwallet.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) -lssl -lcrypto
 
 
 sha: $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/SHA256/sha256.h
@@ -44,3 +44,4 @@ all: gen_key_mode3
 .PHONY: clean
 clean:
 	rm -f gen_key_mode3
+	rm -f sha
