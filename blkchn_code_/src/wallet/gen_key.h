@@ -7,5 +7,6 @@
 #define WALLET_GEN_KEY_H
 
 void encryptfile();
+void allfunctions();
 
 #endif //WALLET_GEN_KEY_H

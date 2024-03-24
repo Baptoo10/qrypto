@@ -1,4 +1,5 @@
 #include "config.h"
+#include "leveldb/c.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -174,6 +175,7 @@ int gen_address(uint8_t pk[]){
 
 }
 
+/*
 void walletdat(uint8_t pk[], uint8_t sk[]) {
 
     FILE *fPtr = fopen("./wallet.dat", "wb");
@@ -209,6 +211,79 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
     // Free memory
     free(addr_cat_crf);
 
+}
+*/
+
+/*
+void walletdat(uint8_t pk[], uint8_t sk[]) {
+    leveldb_t *db;
+    leveldb_options_t *options;
+    leveldb_readoptions_t *roptions;
+    leveldb_writeoptions_t *woptions;
+    char *err = NULL;
+
+    // Ouvrir la base de données
+    options = leveldb_options_create();
+    leveldb_options_set_create_if_missing(options, 1);
+    db = leveldb_open(options, "./walletdb", &err);
+    if (err != NULL) {
+        fprintf(stderr, "Error opening database: %s\n", err);
+        exit(1);
+    }
+
+    // Écrire les données dans la base de données
+    woptions = leveldb_writeoptions_create();
+    leveldb_put(db, woptions, "public_key", sizeof("public_key"-1),(char *)pk, CRYPTO_PUBLICKEYBYTES, &err);
+    leveldb_put(db, woptions, "secret_key", sizeof("secret_key"-1), (char *)sk, CRYPTO_SECRETKEYBYTES, &err);
+    // Ajoutez d'autres données selon vos besoins
+
+    // Gestion des erreurs
+    if (err != NULL) {
+        fprintf(stderr, "Error writing to database: %s\n", err);
+        exit(1);
+    }
+
+    // Fermer la base de données
+    leveldb_writeoptions_destroy(woptions);
+    leveldb_options_destroy(options);
+    leveldb_close(db);
+
+    printf("Data written to LevelDB successfully.\n");
+}
+*/
+#include <assert.h>
+
+void walletdat(uint8_t pk[], uint8_t sk[]) {
+    leveldb_t *db;
+    leveldb_options_t *options;
+    leveldb_writeoptions_t *write_options;
+    char *err = NULL;
+
+    // Ouvrir la base de données
+    options = leveldb_options_create();
+    leveldb_options_set_create_if_missing(options, 1);
+    db = leveldb_open(options, "/tmp/testdb", &err);
+    if (err != NULL) {
+        fprintf(stderr, "Error opening database: %s\n", err);
+        leveldb_free(err);
+        leveldb_options_destroy(options);
+        return;
+    }
+
+    // Écrire les données dans la base de données
+    write_options = leveldb_writeoptions_create();
+    leveldb_put(db, write_options, (const char *)pk, CRYPTO_PUBLICKEYBYTES, (const char *)sk, CRYPTO_SECRETKEYBYTES, &err);
+    if (err != NULL) {
+        fprintf(stderr, "Error writing to database: %s\n", err);
+        leveldb_free(err);
+    }
+
+    // Fermer la base de données
+    leveldb_writeoptions_destroy(write_options);
+    leveldb_close(db);
+    leveldb_options_destroy(options);
+
+    printf("Data written to LevelDB successfully.\n");
 }
 
 

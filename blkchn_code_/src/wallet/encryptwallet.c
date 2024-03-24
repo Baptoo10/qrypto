@@ -2,6 +2,7 @@
 
 #include "encryptwallet.h"
 #include "walletdat_aes.h"
+#include "leveldb/c.h"
 
 #include "../HashFunctions/SHA256/sha256.h"
 #include "../print_type/printtype.h"
@@ -13,11 +14,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-char *showhex(const uint8_t a[], int size);
 
+char *showhex(const uint8_t a[], int size);
 bool isPswdGood(const char *password);
 void encryptfile(bool HasAlreadyBeenCipher);
-
 
 
 void encryptfile(bool HasAlreadyBeenCipher){
