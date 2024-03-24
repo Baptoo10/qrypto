@@ -1,4 +1,12 @@
-load("util.sage")
+import time
+import sage.parallel.multiprocessing_sage
+import os
+
+file = os.path.abspath(__file__)
+path_parts = os.path.split(file)
+path = os.path.join(*path_parts[:-1]) + "/"
+
+load(f"{path}util.sage")
 
 def FromProdToJac(C, E, P_c, Q_c, P, Q, a):
     Fp2 = E.base()
@@ -218,6 +226,7 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
         # Precompute some powers of D1, D2 to save computations later.
         # We are going to perform O(a^1.5) squarings instead of O(a^2)
         if a >= 16:
+            print("a>=16")
             gap = Integer(a).isqrt()
             doubles = [(0, D1, D2)]
             _D1, _D2 = D1, D2
@@ -229,11 +238,14 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
             G1, G2 = G1.monic(), G2.monic()
             next_powers = [doubles[a-2*gap], doubles[a-gap]]
         else:
+            print("a<16")
             G1, _ = jacobian_iter_double(h, D1[0], D1[1], a-1)
             G2, _ = jacobian_iter_double(h, D2[0], D2[1], a-1)
     else:
+        print("else")
         (l, _D1, _D2) = powers[-1]
         if a >= 16:
+            print("else and a>=16")
             next_powers = powers if l < a-1 else powers[:-1]
         G1, _ = jacobian_iter_double(h, _D1[0], _D1[1], a-1-l)
         G2, _ = jacobian_iter_double(h, _D2[0], _D2[1], a-1-l)
@@ -241,7 +253,9 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
     #assert 2^a*D1 == 0
     #assert 2^a*D2 == 0
     G3, r3 = h.quo_rem(G1 * G2)
-    assert r3 == 0
+    print("preok r3")
+    assert r3 == 0 #WTF IS GOING ON ???????
+    print("ok r3")
 
     delta = Matrix(G.padded_list(3) for G in (G1,G2,G3))
     # H1 = 1/det (G2[1]*G3[0] - G2[0]*G3[1])
@@ -383,6 +397,7 @@ def Does22ChainSplit(E1, E0, P_c, Q_c, P, Q, a, c, d):
     chain = []
     # gluing step
     h, D11, D12, D21, D22, f = FromProdToJac(E1, E0, P_c, Q_c, P, Q, a)
+    print("ok 1")
     chain.append(f)
     next_powers = None
     # print(f"order 2^{a-1} on hyp curve ...")
@@ -392,6 +407,7 @@ def Does22ChainSplit(E1, E0, P_c, Q_c, P, Q, a, c, d):
         chain.append(f)
         # print(f"order 2^{a - i - 1} on hyp curve {h}")
     # now we are left with a quadratic splitting: is it singular?
+    print("ok 2")
     G1 = D11
     G2 = D21
     G3, r3 = h.quo_rem(G1 * G2)

@@ -1,5 +1,11 @@
 import time
-load('richelot_aux.sage')
+import sage.parallel.multiprocessing_sage
+import os
+
+file = os.path.abspath(__file__)
+path_parts = os.path.split(file)
+path = os.path.join(*path_parts[:-1]) + "/"
+load(f'{path}richelot_aux.sage')
 proof.arithmetic(False)# Speeds things up in Sage
 
 def Verify(E0,P1,Q1,P1p,Q1p,E1,E1p,p,b,c,d,l):
@@ -14,6 +20,9 @@ def Verify(E0,P1,Q1,P1p,Q1p,E1,E1p,p,b,c,d,l):
     K.<i> = GF(p^2, modulus=I^2+1)
     E0_ext = E0.change_ring(K)
     assert Does22ChainSplit(E1,E0_ext, d*P1, d*Q1, (c*l)*P0, (c*l)*Q0, b,c,d)
+    print("first ok")
     assert Does22ChainSplit(E1p,E0_ext, d*P1p, d*Q1p, (c*l)*P0, (c*l)*Q0, b,c,d)
+    print("second ok")
     t1 = time.time()
     print_info("total verify took %0.2fs" % (t1 - t0))
+    return True
