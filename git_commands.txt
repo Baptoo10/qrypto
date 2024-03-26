@@ -7,6 +7,18 @@ Ajouter le git sur votre machine (choississez un bon emplacement puisqu'il risqu
 Si demande d'un accès SSH, venir me demander, il faudra générer une clé SSH à partir de Github qu'on enregistrera ensuite dans un dossier spécifique (pour que votre pc soit bien reconnu comme étant celui appartenant au même propriétaire que le compte Github. Peut ainsi éviter de redemander la connexion au terminal git bash à chaque fois qu'un nouveau projet est lancé notamment).
 
 __________________________________________________________________________________________________________________________________________________________
+Ajouter un répertoire en tant que sous-module (ex : ajouter un repo dans votre repo) :
+
+1) Suppression du repertoire de l'index s'il y a déjà eu des tests d'installation du repo :
+git rm --cached PATH_TO_FOLDER
+
+2) Ajout en tant qu'un sous-module :
+git submodule add GIT_LINK (ex : fit submodule add https://github.com/google/leveldb.git blkchn_code_/src/leveldb)
+
+3) Commit les modifications :
+git commit -m "COMMIT MESSAGE"
+
+__________________________________________________________________________________________________________________________________________________________
 
 
 Probème pour avoir toutes les branches alors que vous avez tout le repo en local ? => L'intégralité du repo est bien téléchargé, seulement, toutes les branches ne sont pas toujours nécessairement présentes, donc :
