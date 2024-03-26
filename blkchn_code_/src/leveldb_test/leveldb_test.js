@@ -1,17 +1,34 @@
 const { Level } = require('level')
 
-// Create a database
-const db = new Level('example', { valueEncoding: 'json' })
+async function main() {
+    // Create a database
+    const db = new Level('dbtest', { valueEncoding: 'json' })
 
-// Add an entry with key 'a' and value 1
-db.put('a', 1)
-    .then(() => {
+    try {
+        // Add an entry with key 'a' and value 1
+        await db.put('a', 1);
+        await db.put('b', 2);
+        await db.put('c', 3);
         console.log('Entry added successfully');
-    })
-    .catch((error) => {
-        console.error('Error adding entry:', error);
-    });
 
-const value = db.get('a')
+        // Synchronize the data to disk
+        await db.close();
+        await db.open();
 
-console.log("value : ", value)
+        // Récupérer la valeur associée à la clé 'a'
+        const valuea = await db.get('a');
+        const valueb = await db.get('b');
+        const valuec = await db.get('c');
+        
+        console.log("Value for key 'a':", valuea);
+        console.log("Value for key 'b':", valueb);
+        console.log("Value for key 'c':", valuec);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+main().catch(console.error);
+
+
+//usage : leveldbutil dump ./example/000005.ldb
