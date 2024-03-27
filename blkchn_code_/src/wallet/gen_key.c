@@ -186,7 +186,7 @@ void walletdat(uint8_t pk[], uint8_t sk[]){
     sqlite3 *db;
 
 // Ouvrir la base de données SQLite
-    int rc = sqlite3_open("wallet.db", &db);
+    int rc = sqlite3_open("wallet.dat", &db);
     if (rc) {
         fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
