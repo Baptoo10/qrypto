@@ -1,5 +1,12 @@
 #include "config.h"
-#include "leveldb/c.h"
+//#include "leveldb/c.h"
+#include <sqlite3.h>
+//#include "../sqlite_amalgamation_3450200/sqlite3.h"
+/*
+ * sqlite.org :
+ * "Over 100 separate source files are concatenated into a single large file of C-code named "sqlite3.c"
+ * and referred to as "the amalgamation". The amalgamation contains everything an application needs to embed SQLite."
+ */
 
 #include <stddef.h>
 #include <stdio.h>
@@ -175,7 +182,53 @@ int gen_address(uint8_t pk[]){
 
 }
 
+void walletdat(uint8_t pk[], uint8_t sk[]){
+    sqlite3 *db;
 
+// Ouvrir la base de données SQLite
+    int rc = sqlite3_open("wallet.db", &db);
+    if (rc) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(1);
+    }
+
+// Créer la table si elle n'existe pas déjà
+    char *sql = "CREATE TABLE IF NOT EXISTS wallet (public_key TEXT, secret_key TEXT, address TEXT);";
+    rc = sqlite3_exec(db, sql, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(1);
+    }
+
+// Préparer la requête d'insertion
+    sql = "INSERT INTO wallet (public_key, secret_key, address) VALUES (?, ?, ?);";
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't prepare statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(1);
+    }
+
+// Binder les valeurs et exécuter la requête
+    rc = sqlite3_bind_text(stmt, 1, showhex(pk, CRYPTO_PUBLICKEYBYTES), -1, SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 2, showhex(sk, CRYPTO_SECRETKEYBYTES), -1, SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 3, addr_cat_crf, -1, SQLITE_STATIC);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "Can't execute statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(1);
+    }
+
+// Finaliser et fermer la base de données
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+/*
 void walletdat(uint8_t pk[], uint8_t sk[]) {
 
     FILE *fPtr = fopen("./wallet.dat", "wb");
@@ -212,7 +265,7 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
     free(addr_cat_crf);
 
 }
-
+*/
 
 void allfunctions(){
     if(!havewallet()) {
