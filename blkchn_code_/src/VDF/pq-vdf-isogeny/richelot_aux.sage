@@ -212,6 +212,7 @@ def jacobian_iter_double(h, u, v, n):
     return u.monic(), v
 
 def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
+    print(f"a = {a}")
     # power is an optional list of precomputed tuples
     # (l, 2^l D1, 2^l D2) where l < a are increasing
     R,x = h.parent().objgen()
@@ -226,7 +227,6 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
         # Precompute some powers of D1, D2 to save computations later.
         # We are going to perform O(a^1.5) squarings instead of O(a^2)
         if a >= 16:
-            print("a>=16")
             gap = Integer(a).isqrt()
             doubles = [(0, D1, D2)]
             _D1, _D2 = D1, D2
@@ -238,22 +238,19 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
             G1, G2 = G1.monic(), G2.monic()
             next_powers = [doubles[a-2*gap], doubles[a-gap]]
         else:
-            print("a<16")
             G1, _ = jacobian_iter_double(h, D1[0], D1[1], a-1)
             G2, _ = jacobian_iter_double(h, D2[0], D2[1], a-1)
     else:
-        print("else")
         (l, _D1, _D2) = powers[-1]
         if a >= 16:
-            print("else and a>=16")
             next_powers = powers if l < a-1 else powers[:-1]
         G1, _ = jacobian_iter_double(h, _D1[0], _D1[1], a-1-l)
         G2, _ = jacobian_iter_double(h, _D2[0], _D2[1], a-1-l)
 
     #assert 2^a*D1 == 0
     #assert 2^a*D2 == 0
-    G3, r3 = h.quo_rem(G1 * G2)
     print("preok r3")
+    G3, r3 = h.quo_rem(G1 * G2)
     assert r3 == 0 #WTF IS GOING ON ???????
     print("ok r3")
 

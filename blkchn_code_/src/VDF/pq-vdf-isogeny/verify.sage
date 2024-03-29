@@ -19,6 +19,7 @@ def Verify(E0,P1,Q1,P1p,Q1p,E1,E1p,p,b,c,d,l):
     _.<I> = GF(p)[]
     K.<i> = GF(p^2, modulus=I^2+1)
     E0_ext = E0.change_ring(K)
+    print(f"b = {b}\n\nE0    = {E0}\n\nE0_ext = {E0_ext}\n\nP0 = {P0}\n\nQ0 = {Q0}\n\nc = {c}\n\nl = {l}")
     assert Does22ChainSplit(E1,E0_ext, d*P1, d*Q1, (c*l)*P0, (c*l)*Q0, b,c,d)
     print("first ok")
     assert Does22ChainSplit(E1p,E0_ext, d*P1p, d*Q1p, (c*l)*P0, (c*l)*Q0, b,c,d)

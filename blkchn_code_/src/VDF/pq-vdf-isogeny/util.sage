@@ -10,7 +10,7 @@ def base_torsion(E,N):
     _.<I> = GF(p)[]
     K.<i> = GF(p^2, modulus=I^2+1)
     E1 = E.change_ring(K)
-    P1,Q1 = E1.gens()
+    P1,Q1 = E1.gens()#problem here!!!
     P1 = cofactor *P1
     Q1 = cofactor *Q1
     return P1,Q1
