@@ -1,12 +1,6 @@
 #include "config.h"
 //#include "leveldb/c.h"
-#include <sqlite3.h>
-//#include "../sqlite_amalgamation_3450200/sqlite3.h"
-/*
- * sqlite.org :
- * "Over 100 separate source files are concatenated into a single large file of C-code named "sqlite3.c"
- * and referred to as "the amalgamation". The amalgamation contains everything an application needs to embed SQLite."
- */
+#include "sqlcipher/sqlite3.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -15,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include <arpa/inet.h> // Pour la fonction htonl
 #include <math.h>
@@ -31,7 +26,7 @@
 
 #include "../print_type/printtype.h"
 
-#include "encryptwallet.h"
+//#include "encryptwallet.h"
 #include "walletdat_aes.h"
 
 uint8_t mk[CRYPTO_MASTERSECRETKEYBYTES];
@@ -41,17 +36,19 @@ uint8_t seed[3 * SEEDBYTES];
 unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
 unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
 
-char *addr_cat_crf = NULL;
 
+char *addr_cat_crf = NULL;
 bool cipherwallet;
 
 
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
+bool isPswdGood(const char *password);
+bool encryptfile(bool HasAlreadyBeenCipher);
 void allfunctions();
 
 bool havewallet(){
-    const char *walletdat = "./wallet.dat";
+    const char *walletdat = "./pqtwallet.dat";
     const char *encwalletdat = "./enc_wallet.dat";
 
     if (access(walletdat, F_OK) != -1) {
@@ -182,19 +179,40 @@ int gen_address(uint8_t pk[]){
 
 }
 
-void walletdat(uint8_t pk[], uint8_t sk[]){
-    sqlite3 *db;
+// Must create a new table for tx, later (with data like 'inputtx BLOB' and 'outputtx BLOB')
+void walletdat(uint8_t pk[], uint8_t sk[], bool encrypt, char* userpswd) {
 
-// Ouvrir la base de données SQLite
-    int rc = sqlite3_open("wallet.dat", &db);
-    if (rc) {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+    sqlite3 *db;
+    char *err_msg = 0;
+
+    int rc = sqlite3_open("qptwallet.dat", &db);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
         exit(1);
     }
 
-// Créer la table si elle n'existe pas déjà
-    char *sql = "CREATE TABLE IF NOT EXISTS wallet (public_key TEXT, secret_key TEXT, address TEXT);";
+    if(encrypt) {
+        rc = sqlite3_key(db, userpswd, strlen(userpswd));
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Cannot set database key: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            exit(1);
+        }
+        /* in CLI :
+         * sqlcipher qptwallet.dat
+         * PRAGMA key = 'userpswd';
+         * SELECT * FROM qptwallet;
+         *
+         * must remove files :
+         * - encryptwallet.c/.h
+         * - walletdat_aes.c/.h
+         */
+    }
+
+    char *sql = "CREATE TABLE IF NOT EXISTS qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
+                " hex_public_key TEXT, hex_secret_key TEXT, address TEXT);";
     rc = sqlite3_exec(db, sql, NULL, 0, NULL);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(db));
@@ -202,8 +220,7 @@ void walletdat(uint8_t pk[], uint8_t sk[]){
         exit(1);
     }
 
-// Préparer la requête d'insertion
-    sql = "INSERT INTO wallet (public_key, secret_key, address) VALUES (?, ?, ?);";
+    sql = "INSERT INTO qptwallet (raw_public_key, raw_secret_key, hex_public_key, hex_secret_key, address) VALUES (?,?,?,?,?);";
     sqlite3_stmt *stmt;
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
@@ -212,10 +229,11 @@ void walletdat(uint8_t pk[], uint8_t sk[]){
         exit(1);
     }
 
-// Binder les valeurs et exécuter la requête
-    rc = sqlite3_bind_text(stmt, 1, showhex(pk, CRYPTO_PUBLICKEYBYTES), -1, SQLITE_STATIC);
-    rc = sqlite3_bind_text(stmt, 2, showhex(sk, CRYPTO_SECRETKEYBYTES), -1, SQLITE_STATIC);
-    rc = sqlite3_bind_text(stmt, 3, addr_cat_crf, -1, SQLITE_STATIC);
+    rc = sqlite3_bind_blob(stmt, 1, pk, CRYPTO_PUBLICKEYBYTES, -1);
+    rc = sqlite3_bind_blob(stmt, 2, sk, CRYPTO_SECRETKEYBYTES, -1);
+    rc = sqlite3_bind_text(stmt, 3, showhex(pk, CRYPTO_PUBLICKEYBYTES), -1, SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 4, showhex(sk, CRYPTO_SECRETKEYBYTES), -1, SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 5, addr_cat_crf, -1, SQLITE_STATIC);
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         fprintf(stderr, "Can't execute statement: %s\n", sqlite3_errmsg(db));
@@ -223,10 +241,12 @@ void walletdat(uint8_t pk[], uint8_t sk[]){
         exit(1);
     }
 
-// Finaliser et fermer la base de données
     sqlite3_finalize(stmt);
     sqlite3_close(db);
+
 }
+
+
 
 /*
 void walletdat(uint8_t pk[], uint8_t sk[]) {
@@ -267,6 +287,90 @@ void walletdat(uint8_t pk[], uint8_t sk[]) {
 }
 */
 
+bool isPswdGood(const char *password) {
+
+    bool hasGoodLength = false;
+    bool hasUpperCase = false;
+    bool hasLowerCase = false;
+    bool hasDigit = false;
+    bool hasSpecialChar = false;
+
+    if (strlen(password) >= 12) {
+        hasGoodLength = true;
+    }
+
+    for (const char *ptr = password; *ptr != '\0'; ++ptr) {
+        if (isupper(*ptr)) {
+            hasUpperCase = true;
+        } else if (islower(*ptr)) {
+            hasLowerCase = true;
+        } else if (isdigit(*ptr)) {
+            hasDigit = true;
+        } else if (!isalnum(*ptr)) {
+            hasSpecialChar = true;
+        }
+    }
+
+    if (!hasGoodLength || !hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
+        fprintf(stderr, "The password is not valid. It must contain at least 12 characters, "
+                        "including at least one lowercase letter, one uppercase letter, "
+                        "one number, and one special character.\n\n");
+        return false;
+    } else {
+        return true;
+    }
+}
+char userPassword[100];
+
+bool encryptfile(bool HasAlreadyBeenCipher) {
+
+    char userResponse;
+    bool response = false;
+
+    while (!response) {
+
+        if(!HasAlreadyBeenCipher) {
+            printf("Do you want to encrypt your wallet file with AES (recommended) ? [Y/n] ");
+            scanf(" %s", &userResponse);
+
+            if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' ||
+                userResponse == 'YES') {
+                response = true;
+                printf("You have chosen to encrypt the wallet.dat file.\n");
+
+                do {
+                    printf("Choose a password (100 characters max) : ");
+                    scanf(" %s", &userPassword);
+
+                } while (!isPswdGood(userPassword));
+
+                return true;
+
+            } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
+                       userResponse == 'NO') {
+                response = true;
+                printf("You have chosen not to encrypt the qptwallet.dat file.\n"
+                       "If you change your mind, you can change it by typing command './gen_key_mode3'\n");
+
+                makeFileReadOnly("qptwallet.dat");
+
+                return false;
+            }
+            else {
+                printf("Invalid input. Please enter 'Y' or 'n'.\n");
+            }
+        }
+        else{
+
+            printf("If you want to make your wallet encrypted, please, enter your password (max 100 charac) : ");
+            scanf(" %s", &userPassword);
+
+            exit(0);
+        }
+
+    }
+}
+
 void allfunctions(){
     if(!havewallet()) {
         gen_keys(pk, mk, seed);
@@ -278,15 +382,22 @@ void allfunctions(){
         #ifdef WALLETUNLOCK
             #undef WALLETLOCK
         */
-        walletdat(pk, mk);
-        encryptfile(false);
+        if(encryptfile(false)){
+            walletdat(pk, mk, true, userPassword);
+        }
+        else{
+            walletdat(pk, mk, false, NULL);
+        }
+
+        //encryptfile(false);
     }
     else{
         if(!cipherwallet){
 
             FILE *inputFile = fopen("wallet.dat", "rb");
             if (!inputFile) {
-                errFile("Cannot open ", "wallet.dat");
+                printf("err : Cannot open wallet.dat");
+                //errFile("Cannot open ", "wallet.dat");
             }
 
             char firstLine[300];
@@ -323,7 +434,7 @@ void allfunctions(){
                     char *hashpassword = showhex(sha256_hash, SHA256_DIGEST_LENGTH);
                     printf("sha256_hash ::: %s\n", hashpassword);
 
-                    aes_file("enc_wallet.dat", hashpassword);
+                   // aes_file("enc_wallet.dat", hashpassword);
                     free(hashpassword);
 
                 } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||

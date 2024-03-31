@@ -44,14 +44,12 @@ void encryptfile(bool HasAlreadyBeenCipher){
 
                 } while (!isPswdGood(userPassword));
 
-                sha256_fun((uint8_t *) userPassword, sha256_hash, 1, strlen(userPassword));  // Modification ici
 
-                char *hashpassword = showhex(sha256_hash, SHA256_DIGEST_LENGTH);
 
-                printf("sha256_hash ::: %s\n", hashpassword);
 
-                aes_file("wallet.dat", hashpassword);
-                free(hashpassword);
+
+
+
 
             } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
                        userResponse == 'NO') {
