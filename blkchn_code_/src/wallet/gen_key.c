@@ -208,6 +208,9 @@ void walletdat(uint8_t pk[], uint8_t sk[], bool encrypt, char* userpswd) {
          * must remove files :
          * - encryptwallet.c/.h
          * - walletdat_aes.c/.h
+         *
+         * To develop the actual code, must take a look on this link : https://www.zetetic.net/sqlcipher/sqlcipher-api/#key
+         * this paragraph : sqlcipher_export()
          */
     }
 
