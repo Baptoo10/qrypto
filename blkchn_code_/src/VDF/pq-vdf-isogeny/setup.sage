@@ -1,4 +1,11 @@
-load('util.sage')
+import os
+
+#for having the right path
+file = os.path.abspath(__file__)
+path_parts = os.path.split(file)
+path = os.path.join(*path_parts[:-1]) + "/"
+
+load(f'{path}util.sage')
 
 def is_safe_prime(p):
     """
@@ -90,15 +97,15 @@ def Setup(lam, mu, t):
     E0 = E0.isogenies_prime_degree(3)[0].codomain()
     j = E0.j_invariant()
     t1  = time.time()
-    
-    print_info("setup took %0.2fs" % (t1 - t0))
-    print("This is the prime p")
-    print(p)
-    print(f"The bit size of p is {ceil(log(p,2))}")
-    print(f"This is b: {b}")
-    print(f"This is ell: {ell}")
-    print(f"This is c {c}")
-    print(f"This is d {d}")
-    print(f"The bit size of ell is {ceil(log(ell,2))}")
+
+    #print_info("setup took %0.2fs" % (t1 - t0))
+    #print("This is the prime p")
+    #print(p)
+    #print(f"The bit size of p is {ceil(log(p,2))}")
+    #print(f"This is b: {b}")
+    #print(f"This is ell: {ell}")
+    #print(f"This is c {c}")
+    #print(f"This is d {d}")
+    #print(f"The bit size of ell is {ceil(log(ell,2))}")
 
     return p, b, ell, c, d, j

@@ -1,4 +1,12 @@
-load("util.sage")
+import time
+import sage.parallel.multiprocessing_sage
+import os
+
+file = os.path.abspath(__file__)
+path_parts = os.path.split(file)
+path = os.path.join(*path_parts[:-1]) + "/"
+
+load(f"{path}util.sage")
 
 def FromProdToJac(C, E, P_c, Q_c, P, Q, a):
     Fp2 = E.base()
@@ -204,6 +212,7 @@ def jacobian_iter_double(h, u, v, n):
     return u.monic(), v
 
 def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
+    print(f"a = {a}")
     # power is an optional list of precomputed tuples
     # (l, 2^l D1, 2^l D2) where l < a are increasing
     R,x = h.parent().objgen()
@@ -240,8 +249,10 @@ def FromJacToJac(h, D11, D12, D21, D22, a, powers=None):
 
     #assert 2^a*D1 == 0
     #assert 2^a*D2 == 0
+    print("preok r3")
     G3, r3 = h.quo_rem(G1 * G2)
-    assert r3 == 0
+    assert r3 == 0 #WTF IS GOING ON ???????
+    print("ok r3")
 
     delta = Matrix(G.padded_list(3) for G in (G1,G2,G3))
     # H1 = 1/det (G2[1]*G3[0] - G2[0]*G3[1])
@@ -383,6 +394,7 @@ def Does22ChainSplit(E1, E0, P_c, Q_c, P, Q, a, c, d):
     chain = []
     # gluing step
     h, D11, D12, D21, D22, f = FromProdToJac(E1, E0, P_c, Q_c, P, Q, a)
+    print("ok 1")
     chain.append(f)
     next_powers = None
     # print(f"order 2^{a-1} on hyp curve ...")
@@ -392,6 +404,7 @@ def Does22ChainSplit(E1, E0, P_c, Q_c, P, Q, a, c, d):
         chain.append(f)
         # print(f"order 2^{a - i - 1} on hyp curve {h}")
     # now we are left with a quadratic splitting: is it singular?
+    print("ok 2")
     G1 = D11
     G2 = D21
     G3, r3 = h.quo_rem(G1 * G2)

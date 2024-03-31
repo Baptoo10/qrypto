@@ -1,7 +1,12 @@
 import time
 import sage.parallel.multiprocessing_sage
-load('richelot_aux.sage')
-load('montgomery.sage')
+import os
+
+file = os.path.abspath(__file__)
+path_parts = os.path.split(file)
+path = os.path.join(*path_parts[:-1]) + "/"
+load(f'{path}richelot_aux.sage')
+load(f'{path}montgomery.sage')
 proof.arithmetic(False)# Speeds things up in Sage
 import collections
 
@@ -51,7 +56,7 @@ def Eval(p,b,l,j):
     P0,Q0 =  gen2b(E0, b)
     cofactor = (p^k+1)//l
 
-    t0 = time.time()
+    #t0 = time.time()
     # using elligator 2
     u = Fpk.random_element()
     x1 = A/(u^2-1)
@@ -82,6 +87,6 @@ def Eval(p,b,l,j):
 
     assert E1.j_invariant() != E1p.j_invariant()
 
-    t1 = time.time()
-    print_info("Eval took %0.2fs" % (t1 - t0))
+    #t1 = time.time()
+    #print_info("Eval took %0.2fs" % (t1 - t0))
     return P1,Q1,P1p,Q1p,E1,E1p
