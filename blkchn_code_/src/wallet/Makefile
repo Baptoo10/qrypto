@@ -3,7 +3,7 @@ CXX ?= g++
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
   -Wshadow -Wpointer-arith -mavx2 -mpopcnt -maes -mbmi2 \
-  -march=native -mtune=native -O3
+  -march=native -mtune=native -O3 -DSQLITE_HAS_CODEC
 
 NISTFLAGS += -Wno-unused-result -mavx2 -mpopcnt -maes -mbmi2 \
   -march=native -mtune=native -O3
@@ -33,7 +33,7 @@ gen_key_mode3: gen_key.c ../print_type/printtype.c \
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
 	  -o $@ $< ../print_type/printtype.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c \
 	  $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) \
-	  -lssl -lcrypto -lsqlcipher
+	  -lssl -lcrypto -lsqlcipher --enable-tempstore=ye
 
 
 sha: $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/SHA256/sha256.h

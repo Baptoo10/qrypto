@@ -1,6 +1,13 @@
 #include "config.h"
 //#include "leveldb/c.h"
-#include "sqlcipher/sqlite3.h"
+//#include "sqlcipher/sqlite3.h"
+#include "../sqlite_amalgamation_3450200/sqlite3.h"
+/*
+ * sqlite.org :
+ * "Over 100 separate source files are concatenated into a single large file of C-code named "sqlite3.c"
+ * and referred to as "the amalgamation". The amalgamation contains everything an application needs to embed SQLite."
+ */
+
 
 #include <stddef.h>
 #include <stdio.h>
@@ -39,7 +46,7 @@ unsigned char ripemd160_hash[RIPEMD160_DIGEST_LENGTH];
 
 char *addr_cat_crf = NULL;
 bool cipherwallet;
-
+char userPassword[100];
 
 int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
@@ -48,8 +55,8 @@ bool encryptfile(bool HasAlreadyBeenCipher);
 void allfunctions();
 
 bool havewallet(){
-    const char *walletdat = "./pqtwallet.dat";
-    const char *encwalletdat = "./enc_wallet.dat";
+    const char *walletdat = "./qptwallet.dat";
+    const char *encwalletdat = "./enc_qptwallet.dat";
 
     if (access(walletdat, F_OK) != -1) {
         printf("You already have a wallet.\n");
@@ -184,16 +191,17 @@ void walletdat(uint8_t pk[], uint8_t sk[], bool encrypt, char* userpswd) {
 
     sqlite3 *db;
     char *err_msg = 0;
-
-    int rc = sqlite3_open("qptwallet.dat", &db);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        exit(1);
-    }
+    int rc;
 
     if(encrypt) {
+        rc = sqlite3_open("enc_qptwallet.dat", &db);
+
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            exit(1);
+        }
+
         rc = sqlite3_key(db, userpswd, strlen(userpswd));
         if (rc != SQLITE_OK) {
             fprintf(stderr, "Cannot set database key: %s\n", sqlite3_errmsg(db));
@@ -212,6 +220,15 @@ void walletdat(uint8_t pk[], uint8_t sk[], bool encrypt, char* userpswd) {
          * To develop the actual code, must take a look on this link : https://www.zetetic.net/sqlcipher/sqlcipher-api/#key
          * this paragraph : sqlcipher_export()
          */
+    }
+    else{
+        rc = sqlite3_open("qptwallet.dat", &db);
+
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            exit(1);
+        }
     }
 
     char *sql = "CREATE TABLE IF NOT EXISTS qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
@@ -298,7 +315,7 @@ bool isPswdGood(const char *password) {
     bool hasDigit = false;
     bool hasSpecialChar = false;
 
-    if (strlen(password) >= 12) {
+    if ((strlen(password) >= 12)&&(strlen(password) < 100)) {
         hasGoodLength = true;
     }
 
@@ -323,7 +340,7 @@ bool isPswdGood(const char *password) {
         return true;
     }
 }
-char userPassword[100];
+
 
 bool encryptfile(bool HasAlreadyBeenCipher) {
 
@@ -339,7 +356,7 @@ bool encryptfile(bool HasAlreadyBeenCipher) {
             if (userResponse == 'Y' || userResponse == 'y' || userResponse == 'Yes' || userResponse == 'yes' ||
                 userResponse == 'YES') {
                 response = true;
-                printf("You have chosen to encrypt the wallet.dat file.\n");
+                printf("You have chosen to encrypt your wallet, becoming enc_qptwallet.dat file.\n");
 
                 do {
                     printf("Choose a password (100 characters max) : ");
@@ -352,7 +369,7 @@ bool encryptfile(bool HasAlreadyBeenCipher) {
             } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
                        userResponse == 'NO') {
                 response = true;
-                printf("You have chosen not to encrypt the qptwallet.dat file.\n"
+                printf("You have chosen not to encrypt your wallet, becoming qptwallet.dat file.\n"
                        "If you change your mind, you can change it by typing command './gen_key_mode3'\n");
 
                 makeFileReadOnly("qptwallet.dat");
@@ -372,6 +389,56 @@ bool encryptfile(bool HasAlreadyBeenCipher) {
         }
 
     }
+}
+
+
+int sqlcipher_find_db_index(sqlite3 *db, const char *zDb) {
+    int db_index;
+    if(zDb == NULL){
+        return 0;
+    }
+    for(db_index = 0; db_index < db->nDb; db_index++) {
+        struct Db *pDb = &db->aDb[db_index];
+        if(strcmp(pDb->zDbSName, zDb) == 0) {
+            return db_index;
+        }
+    }
+    return 0;
+}
+
+void getEncryptionKey(sqlite3 *db, const char *dbName, void **key, int *nKey) {
+    extern void sqlcipher_codec_get_key(sqlite3*, int, void**, int*);
+    int dbIndex = sqlcipher_find_db_index(db, dbName);
+    sqlcipher_codec_get_key(db, dbIndex, key, nKey);
+}
+
+bool IsWalletEncrypted(){
+    sqlite3 *db;
+    char *errMsg = 0;
+    int rc;
+
+    // Ouvrir la base de données
+    rc = sqlite3_open("enc_wallet.db", &db);
+    if (rc) {
+        fprintf(stderr, "Impossible d'ouvrir la base de données : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+
+    // Récupérer la clé de chiffrement
+    void *key;
+    int nKey;
+    getEncryptionKey(db, "main", &key, &nKey);
+
+    // Vérifier si la base de données est chiffrée
+    if (nKey > 0) {
+        printf("La base de données est chiffrée.\n");
+    } else {
+        printf("La base de données n'est pas chiffrée.\n");
+    }
+
+    // Fermer la base de données
+    sqlite3_close(db);
+
 }
 
 void allfunctions(){
@@ -397,20 +464,7 @@ void allfunctions(){
     else{
         if(!cipherwallet){
 
-            FILE *inputFile = fopen("wallet.dat", "rb");
-            if (!inputFile) {
-                printf("err : Cannot open wallet.dat");
-                //errFile("Cannot open ", "wallet.dat");
-            }
-
-            char firstLine[300];
-            fgets(firstLine, sizeof(firstLine), inputFile);
-
-            if(strstr(firstLine, "NOPASSWORD")){
-                encryptfile(false);
-            }else{
-                encryptfile(true);
-            }
+            IsWalletEncrypted();
 
         }
         else{
