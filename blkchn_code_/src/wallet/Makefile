@@ -33,7 +33,7 @@ gen_key_mode3: gen_key.c ../print_type/printtype.c \
 	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
 	  -o $@ $< ../print_type/printtype.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c \
 	  $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) \
-	  -lssl -lcrypto -lsqlcipher --enable-tempstore=ye
+	  -lssl -lcrypto -lsqlcipher
 
 
 sha: $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/SHA256/sha256.h
