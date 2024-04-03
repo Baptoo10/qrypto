@@ -10,7 +10,29 @@
 //#include "leveldb/c.h"
 #include <assert.h>
 
-#include "../sqlite_amalgamation_3450200/sqlite3.h"
+
+/*
+ *
+#include "sqlcipher.h"
+#include "crypto.h"
+#include "sqliteInt.h"
+    #include "hash.h"
+    #include "parse.h"
+
+ #include "btreeInt.h"
+#include "pager.h"
+#include "vdbeInt.h"
+
+
+
+#include "sqlite3.h"
+ *
+ */
+
+
+//sqlcipher
+#include "../sqlcipher-master/tsrc/crypto.h"
+#include "../sqlcipher-master/tsrc/sqlite3.h"
 /*
  * sqlite.org :
  * "Over 100 separate source files are concatenated into a single large file of C-code named "sqlite3.c"
@@ -692,7 +714,7 @@ int main(void) {
     allfunctions();
 
 
-// Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
+ // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
     return 0;
 }
