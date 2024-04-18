@@ -37,6 +37,7 @@ gen_key_mode3: gen_key.c $(SOURCES)
 		$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
 	  -o $@ $< $ $(SOURCES) $(LDFLAGS)
 
+
 all: gen_key_mode3
 
 .PHONY: clean
