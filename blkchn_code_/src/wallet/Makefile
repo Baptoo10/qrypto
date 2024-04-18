@@ -3,7 +3,7 @@ CXX ?= g++
 
 CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
   -Wshadow -Wpointer-arith -mavx2 -mpopcnt -maes -mbmi2 \
-  -march=native -mtune=native -O3 -DSQLITE_HAS_CODEC -pthread
+  -march=native -mtune=native -O3
 
 NISTFLAGS += -Wno-unused-result -mavx2 -mpopcnt -maes -mbmi2 \
   -march=native -mtune=native -O3
@@ -33,12 +33,12 @@ AES_HEADERS = $(HEADERS) $(DILITHIUM_PATH)fips202.h $(DILITHIUM_PATH)aes256ctr.h
 HASHFUNCTIONS_SOURCES = $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/RIPEMD160/ripemd160.c
 HASHFUNCTIONS_HEADERS = $(HASHFUN_PATH)/SHA256/sha256.h $(HASHFUN_PATH)/RIPEMD160/ripemd160.h
 
-gen_key_mode3: gen_key.c ../print_type/printtype.c $(SQLCIPHER_SOURCES) $(SQLCIPHER_HEADERS) \
-				../base58/base58.c $(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS)  $(HASHFUNCTIONS_SOURCES) $(HASHFUNCTIONS_HEADERS)
-	$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
-	  -o $@ $< $(SQLCIPHER_SOURCES) ../print_type/printtype.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c \
+gen_key_mode3: gen_key.c ../print_type/printtype.c ../base58/base58.c \
+		$(DILITHIUM_PATH)randombytes.c $(AES_SOURCES) $(AES_HEADERS)  $(HASHFUNCTIONS_SOURCES) $(HASHFUNCTIONS_HEADERS)
+		$(CC) $(CFLAGS) -DDILITHIUM_MODE=3 -DDILITHIUM_USE_AES \
+	  -o $@ $< $ ../print_type/printtype.c ../base58/base58.c $(DILITHIUM_PATH)randombytes.c \
 	  $(AES_SOURCES) $(HASHFUNCTIONS_SOURCES) \
-	  -lssl -lcrypto -lsqlcipher -ldl
+	  -lssl -lcrypto -lsqlcipher
 
 
 sha: $(HASHFUN_PATH)/SHA256/sha256.c $(HASHFUN_PATH)/SHA256/sha256.h
