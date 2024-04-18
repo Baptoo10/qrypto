@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <openssl/sha.h>
 
-//unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
+unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
 //char *showhex2(const uint8_t a[], int size);
 
 int sha256_fun(uint8_t data[], unsigned char *hash, int rounds, size_t data_len) {
