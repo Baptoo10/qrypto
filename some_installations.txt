@@ -13,7 +13,6 @@ LevelDB :
 2) mkdir -p leveldb/build && cd leveldb/build
 3) cmake -DCMAKE_BUILD_TYPE=Release ..
 4) cmake --build .
-
 With wsl :
 5) echo 'export PATH="/mnt/VOTRE_DISQUE(d ou c)/VOTRE_PATH/leveldb/build:$PATH"' >> ~/.bashrc
 6) echo $PATH | grep -q "/mnt/VOTRE_DISQUE(d ou c)/VOTRE_PATH/leveldb/build" && echo "leveldbutil est dans PATH" || echo "leveldbutil n'est pas dans PATH"

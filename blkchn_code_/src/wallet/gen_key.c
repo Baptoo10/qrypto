@@ -60,6 +60,9 @@ int gen_keys(uint8_t pk[], uint8_t sk[], uint8_t seed[]);
 void encodageb58(unsigned char *chainid_ripemd160_fb, size_t chainid_ripemd160_fb_len, const uint16_t addr_type);
 bool isPswdGood(const char *password);
 char* ChooseToEncryptFile(bool HasAlreadyBeenCipher);
+void shell_command(char* commande);
+void sql_walletdat(uint8_t pk[], uint8_t sk[], char *userpswd, bool mustencrypt);
+void enc_walletdat(char *userpswd);
 void allfunctions();
 
 bool havewallet(){
@@ -234,118 +237,63 @@ bool isPswdGood(const char *password) {
 }
 
 
+void shell_command(char* commande){
+    char full_command[200];
+    sprintf(full_command, "%s > /dev/null 2>&1 &", commande);
+    int result = system(full_command);
+
+    if (result == 0) {
+        printf("La commande a été exécutée avec succès.\n");
+    } else {
+        printf("Erreur lors de l'exécution de la commande.\n");
+    }
+}
+
 
 /*
 /********************************************************
  *                                                      *
- *                  SQLITE SEE                          *
+ *                     SQLCIPHER                        *
  *                                                      *
 /********************************************************
 */
 
+
 /*
- * Encrypt an existing wallet database
+ * Create the wallet database
  */
-int encryptDatabase(const char *dbPath, const void *password, int nKey) {
-    sqlite3 *db;
-    int rc;
+void sql_walletdat(uint8_t pk[], uint8_t sk[], char *userpswd, bool mustencrypt) {
 
-    // Ouvre la base de données SQLite
-    rc = sqlite3_open(dbPath, &db);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return rc;
-    }
-
-    // Définit la clé de chiffrement pour la base de données
-    rc = sqlite3_key(db, password, nKey);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to set encryption key: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return rc;
-    }
-
-    // Rechiffre la base de données avec la nouvelle clé (la même dans ce cas)
-    rc = sqlite3_rekey(db, password, nKey);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to encrypt database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return rc;
-    }
-
-    // Ferme la connexion à la base de données
-    sqlite3_close(db);
-    return SQLITE_OK; // Opération réussie
-}
-/*
-int encryptDatabase(char *existingWallet, char *userpswd) {
-    sqlite3 *db;
-    char *errMsg = 0;
-
-    int rc = sqlite3_open(existingWallet, &db);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return rc;
-    }
-
-    rc = sqlite3_key(db, userpswd, strlen(userpswd));
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error setting key: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return rc;
-    }
-
-    sqlite3_close(db);
-
-    return SQLITE_OK;
-}
-*/
-
-// Must create a new table for tx, later (with data like 'inputtx BLOB' and 'outputtx BLOB')
-/*
- * Encrypt a new wallet database
- */
-void enc_walletdat(uint8_t pk[], uint8_t sk[], char *userpswd) {
-
-    printf("us pwd : %s", userpswd);
-
-    sqlite3 *enc_db;
+    sqlite3 *dec_db;
     char *err_msg = 0;
     int rc;
 
-    rc = sqlite3_open("enc_qptwallet.dat", &enc_db);
+    // Open the non cipher database
+    rc = sqlite3_open("dec_qptwallet.dat", &dec_db);
 
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(enc_db));
-        sqlite3_close(enc_db);
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
         exit(1);
     }
 
-    // Define the cipher key
-    rc = sqlite3_key(enc_db, userpswd, strlen(userpswd));
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Cannot set database key: %s\n", sqlite3_errmsg(enc_db));
-        sqlite3_close(enc_db);
-        exit(1);
-    }
-
+    // Creation of the table qptwallet
     char *sql = "CREATE TABLE IF NOT EXISTS qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
                 " hex_public_key TEXT, hex_secret_key TEXT, address TEXT);";
-    rc = sqlite3_exec(enc_db, sql, NULL, 0, NULL);
+    rc = sqlite3_exec(dec_db, sql, NULL, 0, NULL);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(enc_db));
-        sqlite3_close(enc_db);
+        fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
         exit(1);
     }
 
+    // Insert data into qptwallet table
     sql = "INSERT INTO qptwallet (raw_public_key, raw_secret_key, hex_public_key, hex_secret_key, address) VALUES (?,?,?,?,?);";
     sqlite3_stmt *stmt;
-    rc = sqlite3_prepare_v2(enc_db, sql, -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(dec_db, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Can't prepare statement: %s\n", sqlite3_errmsg(enc_db));
-        sqlite3_close(enc_db);
+        fprintf(stderr, "Can't prepare statement: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
         exit(1);
     }
 
@@ -356,169 +304,154 @@ void enc_walletdat(uint8_t pk[], uint8_t sk[], char *userpswd) {
     rc = sqlite3_bind_text(stmt, 5, addr_cat_crf, -1, SQLITE_STATIC);
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "Can't execute statement: %s\n", sqlite3_errmsg(enc_db));
-        sqlite3_close(enc_db);
+        fprintf(stderr, "Can't execute statement: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
         exit(1);
     }
 
     sqlite3_finalize(stmt);
-    sqlite3_close(enc_db);
+    sqlite3_close(dec_db);
 
+    // if user have choosen to encrypt his wallet
+    if(mustencrypt){
+        enc_walletdat(userpswd);
+    }
+}
+
+/*
+ * Encrypt a wallet database
+ */
+void enc_walletdat(char *userpswd) {
+
+    sqlite3 *dec_db;
+    char *err_msg = 0;
+    int rc;
+    char attach_db[200];
+
+    // Open the non cipher database
+    rc = sqlite3_open("dec_qptwallet.dat", &dec_db);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
+        exit(1);
+    }
+
+    // Attach the cipher bdd
+    snprintf(attach_db, sizeof(attach_db), "ATTACH DATABASE 'enc_qptwallet.dat' AS encrypted KEY '%s';", userpswd);
+    rc = sqlite3_exec(dec_db, attach_db, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't attach database: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
+        exit(1);
+    }
+
+    // Creation of the table qptwallet
+    char *sql = "CREATE TABLE IF NOT EXISTS encrypted.qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
+                 " hex_public_key TEXT, hex_secret_key TEXT, address TEXT);";
+    rc = sqlite3_exec(dec_db, sql, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
+        exit(1);
+    }
+
+    // Insert data from non cipher db into cipher one (from qptwallet table)
+    sql = "INSERT INTO encrypted.qptwallet SELECT * FROM qptwallet;";
+    rc = sqlite3_exec(dec_db, sql, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't insert data: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
+        exit(1);
+    }
+
+    // Detach the cipher db
+    rc = sqlite3_exec(dec_db, "DETACH DATABASE encrypted;", NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't detach database: %s\n", sqlite3_errmsg(dec_db));
+        sqlite3_close(dec_db);
+        exit(1);
+    }
+
+    sqlite3_close(dec_db);
+
+    // remove dec_qptwallet.dat file
+    shell_command("rm -f dec_qptwallet.dat");
 }
 
 /*
  * Decrypt a wallet database
  */
-void dec_walletdat(uint8_t pk[], uint8_t sk[], bool HasAlreadyBeenEncrypted, char *userpswd) {
+void dec_walletdat(char *userpswd) {
 
-    sqlite3 *dec_db;
+    sqlite3 *enc_db;
     char *err_msg = 0;
     int rc;
+    char attach_db[200];
+    char key[100];
 
-    // If the user doesn't want to encrypt his database
-    if(!HasAlreadyBeenEncrypted) {
-        //create a plaintext qptwallet
-        rc = sqlite3_open("dec_qptwallet.dat", &dec_db);
+    // Open the cipher database
+    rc = sqlite3_open("enc_qptwallet.dat", &enc_db);
 
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        char *sql = "CREATE TABLE IF NOT EXISTS qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
-                    " hex_public_key TEXT, hex_secret_key TEXT, address TEXT);";
-        rc = sqlite3_exec(dec_db, sql, NULL, 0, NULL);
-
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        sql = "INSERT INTO qptwallet (raw_public_key, raw_secret_key, hex_public_key, hex_secret_key, address) VALUES (?,?,?,?,?);";
-        sqlite3_stmt *stmt;
-        rc = sqlite3_prepare_v2(dec_db, sql, -1, &stmt, NULL);
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Can't prepare statement: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        rc = sqlite3_bind_blob(stmt, 1, pk, CRYPTO_PUBLICKEYBYTES, -1);
-        rc = sqlite3_bind_blob(stmt, 2, sk, CRYPTO_SECRETKEYBYTES, -1);
-        rc = sqlite3_bind_text(stmt, 3, showhex(pk, CRYPTO_PUBLICKEYBYTES), -1, SQLITE_STATIC);
-        rc = sqlite3_bind_text(stmt, 4, showhex(sk, CRYPTO_SECRETKEYBYTES), -1, SQLITE_STATIC);
-        rc = sqlite3_bind_text(stmt, 5, addr_cat_crf, -1, SQLITE_STATIC);
-        rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE) {
-            fprintf(stderr, "Can't execute statement: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        sqlite3_finalize(stmt);
-        sqlite3_close(dec_db);
-
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
     }
-    // If the user wants to decrypt his database
-    else{
-        // Ouvrez la base de données chiffrée
-        rc = sqlite3_open("enc_qptwallet.dat", &dec_db);
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Cannot open encrypted database: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
 
-        // Définir la clé de déchiffrement
-        rc = sqlite3_key(dec_db, userpswd, strlen(userpswd));
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Cannot set database key for decryption: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        // Ouvrez la nouvelle base de données non chiffrée
-        rc = sqlite3_open("dec_qptwallet.dat", &dec_db);
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Cannot open decrypted database: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        // Copiez le contenu déchiffré de la base de données chiffrée vers la base de données non chiffrée
-        const char *sql = "ATTACH DATABASE 'dec_qptwallet.dat' AS dec_db;"
-                          "CREATE TABLE dec_db.qptwallet AS SELECT * FROM main.qptwallet;";
-        rc = sqlite3_exec(dec_db, sql, NULL, 0, NULL);
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Error copying decrypted data: %s\n", sqlite3_errmsg(dec_db));
-            sqlite3_close(dec_db);
-            sqlite3_close(dec_db);
-            exit(1);
-        }
-
-        printf("Decryption successful. Encrypted table copied to unencrypted database.\n");
-
-        // Fermez la connexion à la base de données chiffrée
-        sqlite3_close(dec_db);
-        // Fermez la connexion à la base de données non chiffrée
-        sqlite3_close(dec_db);
+    // Define the cipher key
+    snprintf(key, sizeof(key), "PRAGMA key = '%s';", userpswd);
+    rc = sqlite3_exec(enc_db, key, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't set PRAGMA key: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
     }
+
+    // Attach the non cipher bdd
+    snprintf(attach_db, sizeof(attach_db), "ATTACH DATABASE 'dec_qptwallet.dat' AS decrypted KEY '';");
+    rc = sqlite3_exec(enc_db, attach_db, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't attach database: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
+    }
+
+    // Creation of the table qptwallet
+    char *sql = "CREATE TABLE IF NOT EXISTS decrypted.qptwallet (idwallet INTEGER PRIMARY KEY AUTOINCREMENT, raw_public_key BLOB, raw_secret_key BLOB,"
+                " hex_public_key TEXT, hex_secret_key TEXT, address TEXT);";
+    rc = sqlite3_exec(enc_db, sql, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
+    }
+
+    // Insert data from non cipher db into cipher one (from qptwallet table)
+    sql = "INSERT INTO decrypted.qptwallet SELECT * FROM qptwallet;";
+    rc = sqlite3_exec(enc_db, sql, NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't insert data: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
+    }
+
+    // Detach the cipher db
+    rc = sqlite3_exec(enc_db, "DETACH DATABASE decrypted;", NULL, 0, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't detach database: %s\n", sqlite3_errmsg(enc_db));
+        sqlite3_close(enc_db);
+        exit(1);
+    }
+
+    sqlite3_close(enc_db);
+
+    // remove enc_qptwallet.dat file
+    shell_command("rm -f enc_qptwallet.dat");
 }
 
-/*
- * Decrypt qptwallet.dat
- */
-void DecryptDatabase(const char* dbName, const char* key) {
-    sqlite3* db;
-    int rc = sqlite3_open(dbName, &db);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Erreur lors de l'ouverture de la base de données: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        exit(EXIT_FAILURE);
-    }
 
-    // Définit la clé de chiffrement avec le mot de passe fourni
-    rc = sqlite3_key(db, key, strlen(key));
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Erreur lors de la définition de la clé de chiffrement: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        exit(EXIT_FAILURE);
-    }
-
-    // Récupère le contenu de la base de données
-    sqlite3_stmt* stmt;
-    rc = sqlite3_prepare_v2(db, "SELECT * FROM qptwallet", -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Erreur lors de la préparation de la requête: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        exit(EXIT_FAILURE);
-    }
-
-    // Crée un fichier pour le contenu déchiffré
-    FILE* decFile = fopen("dec_qptwallet.dat", "wb");
-    if (decFile == NULL) {
-        fprintf(stderr, "Erreur lors de la création du fichier de déchiffrement.\n");
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        exit(EXIT_FAILURE);
-    }
-
-    // Écrit le contenu déchiffré dans le fichier
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        const unsigned char* data = sqlite3_column_blob(stmt, 0);
-        int dataSize = sqlite3_column_bytes(stmt, 0);
-        fwrite(data, sizeof(unsigned char), dataSize, decFile);
-    }
-
-    // Finalise la requête
-    sqlite3_finalize(stmt);
-
-    // Ferme le fichier et la base de données
-    fclose(decFile);
-    sqlite3_close(db);
-}
+// Must create a new table for tx, later (with data like 'inputtx BLOB' and 'outputtx BLOB')
 
 
 
@@ -544,15 +477,18 @@ bool IsWalletEncrypted(bool enc){
         }
     }
     sqlite3_stmt *stmt;
-    const char *query = "SELECT * FROM qptwallet;";
 
+    // Try to do a request to know if the file is encrypted or not
+    const char *query = "SELECT * FROM qptwallet;";
     rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare query: %s\n", sqlite3_errmsg(db));
+        //fprintf(stderr, "Failed to prepare query: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
     }
-
+    // Execute the request
     rc = sqlite3_step(stmt);
+
+    // Conclude
     if (rc == SQLITE_ROW) {
         printf("Database is not encrypted\n");
         sqlite3_finalize(stmt);
@@ -566,7 +502,6 @@ bool IsWalletEncrypted(bool enc){
     }
 
 }
-
 
 
 /*
@@ -639,14 +574,14 @@ void allfunctions(){
         gen_keys(pk, mk, seed);
         gen_address(pk);
 
-        char* userPassword=ChooseToEncryptFile(false);
+        char* userPassword = ChooseToEncryptFile(false);
 
         if(userPassword!=NULL){
             printf("Password: %s\n", userPassword);
-            enc_walletdat(pk, mk, userPassword);
+            sql_walletdat(pk, mk, userPassword, true);
         }
         else{
-            dec_walletdat(pk, mk, false, NULL);
+            sql_walletdat(pk, mk, NULL, false);
         }
 
     }
@@ -669,13 +604,13 @@ void allfunctions(){
 
                     response=true;
 
-                    char* userPassword_[100];
+                    char* userPassword[100];
 
                     printf("\nPlease, enter your password (max 100 charac) : ");
-                    scanf("%s", userPassword_);
-                    printf("user password : %s\n", userPassword_);
+                    scanf("%s", userPassword);
+                    printf("user password : %s\n", userPassword);
 
-                    encryptDatabase("dec_qptwallet.dat", userPassword_);
+                    enc_walletdat(userPassword);
 
                 } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
                            userResponse == 'NO') {
@@ -708,9 +643,7 @@ void allfunctions(){
 
                     printf("\nPlease, enter your password (max 100 charac) : ");
                     scanf("%s", userPassword);
-                    DecryptDatabase("enc_qptwallet.dat", userPassword);
-
-                    //dec_walletdat(pk, mk, true, userPassword_);
+                    dec_walletdat(userPassword);
 
                 } else if (userResponse == 'N' || userResponse == 'n' || userResponse == 'No' || userResponse == 'no' ||
                            userResponse == 'NO') {
@@ -732,9 +665,7 @@ void allfunctions(){
 
 int main(void) {
 
-
     allfunctions();
-
 
  // Tester si le hash a bien fonctionne grace au powershell windows : Get-FileHash _PATH_/pk_key | Format-List . Spoiler, ca fonctionne
 
