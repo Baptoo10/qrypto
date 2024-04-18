@@ -1,5 +1,8 @@
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 #ifndef WALLET_CONFIG_H
 #define WALLET_CONFIG_H
@@ -20,10 +23,24 @@ inline void makeFileReadOnly(const char *filename){
     #endif
 }
 
+// To type shell command directly in code
+inline void shell_command(char* commande){
+    char full_command[200];
+    sprintf(full_command, "%s > /dev/null 2>&1 &", commande);
+    int result = system(full_command);
+
+    if (result == 0) {
+        printf("Command has been run successfully.\n");
+    } else {
+        printf("Err while executing the command.\n");
+    }
+}
+
 // DILITHIUM-3-AES-CTR-R (gen_key.c)
 #define CRYPTO_PUBLICKEYBYTES 1952
 #define CRYPTO_MASTERSECRETKEYBYTES 4016
 #define SEEDBYTES 32
+
 
 // Address size
 #define ADDRESS 44
