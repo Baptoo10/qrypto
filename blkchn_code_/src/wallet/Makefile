@@ -41,5 +41,6 @@ gen_key_mode3: gen_key.c $(SOURCES)
 all: gen_key_mode3
 
 .PHONY: clean
+
 clean:
 	rm -f gen_key_mode3
