@@ -27,6 +27,13 @@ Probème pour avoir toutes les branches alors que vous avez tout le repo en loca
 
 __________________________________________________________________________________________________________________________________________________________
 
+
+Probème pour avoir toutes les branches alors que vous avez tout le repo en local ? => L'intégralité du repo est bien téléchargé, seulement, toutes les branches ne sont pas toujours nécessairement présentes, donc :
+- git -a branch
+- git checkout NOM_DE_LA_BRANCHE_A_AJOUTER_AU_REPO_LOCAL
+
+__________________________________________________________________________________________________________________________________________________________
+
 Push ses modifications sur le repo git distant (NE JAMAIS PUSH DE CETTE FACON SUR LA BRANCHE MAIN AU RISQUE DE TOUT PERDRE) :
 - git add . //ajout de toutes les modifications avec le ".".
 - git commit -m "message explicant brièvement les modifications apportées, ex : 'generation keys for the wallet almost done ; problem with the sk'"
