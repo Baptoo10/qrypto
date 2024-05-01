@@ -179,6 +179,7 @@ int consensus_verification(){
     return 0;
 }
 
+
 int main() {
 
     const char* block = "Makefile";//"../blocks/blk03802.dat"; //just a Bitcoin block using here for the test
