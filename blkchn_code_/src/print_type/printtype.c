@@ -1,6 +1,5 @@
 #include "printtype.h"
 
-
 char *showhex(const uint8_t a[], int size) {
     char *s = (char *)malloc(size * 2 + 1);
 

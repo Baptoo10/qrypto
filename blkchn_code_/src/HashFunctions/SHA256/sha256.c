@@ -44,19 +44,10 @@ int sha256_fun(uint8_t data[], unsigned char *hash, int rounds, size_t data_len)
 
     return 0;
 }
+
+
 /*
-int main(void){
-    int nombre_caractere;
-
-    char* bonjour = "Bonjour";
-
-    //SIZEOF tableau dynamique    char * bjr = (char*)malloc(sizeof(char) * nombre_caractere);
-
-    sha256_fun(bonjour, sha256_hash, 1000000000, sizeof(bonjour)-1);
-    printf("\nsha256_hash : %s\n", showhex2(sha256_hash, SHA256_DIGEST_LENGTH));
-    return 0;
-}
-
+unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
 
 char *showhex2(const uint8_t a[], int size) {
     char *s = (char *)malloc(size * 2 + 1);
@@ -66,4 +57,18 @@ char *showhex2(const uint8_t a[], int size) {
 
     return s;
 }
+
+int main(void){
+    int nombre_caractere;
+
+    char* bonjour = "Makefile";
+
+    //SIZEOF tableau dynamique    char * bjr = (char*)malloc(sizeof(char) * nombre_caractere);
+
+    sha256_fun(bonjour, sha256_hash, 2, sizeof(bonjour));
+    printf("\nsha256_hash : %s\n", showhex2(sha256_hash, SHA256_DIGEST_LENGTH));
+    return 0;
+}
 */
+
+

@@ -88,3 +88,14 @@ Commandes supplémentaires mais qui ne seront probablement pas utilisées :
 
 git pull effectue 2 opérations en une : git fetch + git merge
 - git pull origin NOM_DE_LA_BRANCHE //Récupération des modifications de la branche "NOM_DE_LA_BRANCHE" en créant une copie locale sur votre machine.
+
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+Démarrer un projet git :
+git init
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Baptoo10/theorie_jeux.git
+git push -u origin main
