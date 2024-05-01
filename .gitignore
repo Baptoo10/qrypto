@@ -8,3 +8,6 @@
 # Build directory.
 ./blkchn_code_/src/leveldb/build/
 ./blkchn_code_/src/leveldb/out/
+
+# files
+./blkchn_code_/src/blocks/blk03802.dat
