@@ -173,7 +173,8 @@ void display_op(map<int, vector<char>> hash_map){
     outfile.close();
 
 }
-// CUDA part - each thread must check a value in the dictionnary
+
+// probably CUDA part - each thread must check a value in the dictionnary
 int consensus_verification(){
 
     return 0;
