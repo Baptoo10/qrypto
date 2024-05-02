@@ -174,7 +174,7 @@ void display_op(map<int, vector<char>> hash_map){
 
 }
 
-// probably CUDA part - each thread must check a value in the dictionnary
+// probably OPENMP part - each thread must check a value in the dictionnary
 int consensus_verification(){
 
     return 0;
