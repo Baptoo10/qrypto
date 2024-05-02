@@ -1,0 +1,7 @@
+What should be soon done :
+- Try to put the dictionnary in leveldb
+- Do the verification (using CUDA could be pretty nice)
+- Must add a PRNG to find a k random to hash the final hash of the block (in consensus_evaluation) in order to detect the next validator
+
+Note :
+- The python script is only here to check if the n times hash worked in the evaluation part

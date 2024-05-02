@@ -31,3 +31,4 @@ all: run_consensus
 
 clean:
 	rm -f run_consensus
+	rm -f sha

@@ -182,7 +182,7 @@ int consensus_verification(){
 
 int main() {
 
-    const char* block = "Makefile";//"../blocks/blk03802.dat"; //just a Bitcoin block using here for the test
+    const char* block = "../blocks/blk03802.dat"; //just a Bitcoin block using here for the test
     map<int, vector<char>> hash_map = consensus_evaluation(block);
 
     display_op(hash_map);
