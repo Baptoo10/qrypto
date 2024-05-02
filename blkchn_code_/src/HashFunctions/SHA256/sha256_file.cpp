@@ -11,13 +11,13 @@
 
 using namespace std;
 
-int sha256_file_fun(const char* filename_or_data, unsigned char *hash, int rounds, bool isDataIsFile) {
+int sha256_file_fun(const char* filename_or_prevHash, unsigned char *hash, int rounds, bool isDataIsFile) {
 
     if (isDataIsFile) {
         // ios::ate places the cursor at the end of the file => allows you to know the size of the file with .tellg()
-        ifstream file(filename_or_data, ios::binary | ios::ate);
+        ifstream file(filename_or_prevHash, ios::binary | ios::ate);
         if (!file.is_open()) {
-            cerr << "Err opening the file: " << filename_or_data << endl;
+            cerr << "Err opening the file: " << filename_or_prevHash << endl;
             return 1;
         }
 
@@ -27,7 +27,7 @@ int sha256_file_fun(const char* filename_or_data, unsigned char *hash, int round
         vector<uint8_t> buffer(size);
 
         if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
-            cerr << "Err reading the file: " << filename_or_data << endl;
+            cerr << "Err reading the file: " << filename_or_prevHash << endl;
             return 1;
         }
         file.close();
@@ -82,7 +82,7 @@ int sha256_file_fun(const char* filename_or_data, unsigned char *hash, int round
             // sha256 op
             SHA256_Init(&sha256_ctx);
             if(i==0)
-                SHA256_Update(&sha256_ctx, filename_or_data, SHA256_DIGEST_LENGTH);
+                SHA256_Update(&sha256_ctx, filename_or_prevHash, SHA256_DIGEST_LENGTH);
             else
                 SHA256_Update(&sha256_ctx, hash, SHA256_DIGEST_LENGTH);
 
