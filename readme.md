@@ -45,6 +45,18 @@ Ou reprendre du path lib :
 $ cp /blkchn_code_/src/lib/libsqlcipher.so.0 /blkchn_code_/src/wallet/libsqlcipher.so.0
 ```
 
+## L'exécutable du wallet 
+```
+$ make
+$ ./gen_key_mode3
+```
+OU
+```
+$ make gen_key_mode3
+$ ./gen_key_mode3
+```
+
+
 # Installations complètes de SQLCipher et LevelDB (inutile pour le lancement du projet qrypto) :
 
 ## SQLCipher (SEE require a License) :
