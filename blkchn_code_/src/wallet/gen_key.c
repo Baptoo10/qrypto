@@ -133,12 +133,14 @@ char* gen_address(uint8_t pk[]){
     //printf("ripemd160_hash : %s\n", showhex(ripemd160_hash, RIPEMD160_DIGEST_LENGTH));
 
 #ifdef MAINNET
-    const uint32_t chain_id = 0x4D41494E; // hex of MAINNET
+    const uint32_t chain_id = 0x4D41494E; // hex of MAINNET => GUq8 after all in b58
     const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of MAINNET
 #else
-    const uint32_t chain_id = 0x54455354; // hex of TESTNET => HtN9K in b58
-    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET => GUq8 in b58
+    const uint32_t chain_id = 0x54455354; // hex of TESTNET => HtN9K after all in b58
+    const uint32_t order_chain_id = htonl(chain_id); // correct order of hex of TESTNET
 #endif
+
+//must add a b58 encode here for chain_id if we want to have MAIN and TEST in our address.
 
     unsigned char chainid_ripemd160[4 + RIPEMD160_DIGEST_LENGTH];
     memcpy(chainid_ripemd160, &order_chain_id, sizeof(order_chain_id));
@@ -152,6 +154,7 @@ char* gen_address(uint8_t pk[]){
 
     //Extract 4 first bytes of the DSHA256()
     memcpy(first_bytes, sha256_hash, 4);
+
 
     //printf("Result Hash (first 4 bytes): %s\n", showhex(first_bytes, 4));
 
