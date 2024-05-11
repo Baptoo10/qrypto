@@ -16,14 +16,13 @@
 #include "../print_type/printtype.h"
 
 // Utilisation de leveldb pour stocker le dictionnaire (push_back tous les hash dans ce cas ? => check de
-// l'espace que ca prend mais pas obligatoire sinon, chaque thread realisera 128 verifications et donc on pourra alors renommer
-// la variable nb_blocks en nb_threads)
+// l'espace que ca prend mais pas obligatoire sinon, chaque thread realisera 128 verifications
 
 using namespace std;
 
 // a block is 128 threads. Then 78125*128 = 10000000
 const int nb_rounds = 10000000;
-const int nb_blocks = 78125;
+const int nb_work_by_thread = 78125;
 unsigned char sha256_hash[SHA256_DIGEST_LENGTH];
 
 map<int, vector<char>> consensus_evaluation(const char* block){
@@ -32,13 +31,13 @@ map<int, vector<char>> consensus_evaluation(const char* block){
     map<int, vector<char>> hash_map;
     int i = 0;
 
-    while(i < nb_blocks) {
+    while(i < nb_work_by_thread) {
 
         vector<char> hash_vector;
 
         if (isDataIsFile) {
-            //only the first part is hashed (nb_rounds/nb_blocks)
-            if (sha256_file_fun(block, sha256_hash, nb_rounds/nb_blocks, isDataIsFile) == 0) {
+            //only the first part is hashed (nb_rounds/nb_work_by_thread)
+            if (sha256_file_fun(block, sha256_hash, nb_rounds/nb_work_by_thread, isDataIsFile) == 0) {
 
                 // copy(sha256_hash, sha256_hash + SHA256_DIGEST_LENGTH, hash_value);
 
@@ -79,7 +78,7 @@ map<int, vector<char>> consensus_evaluation(const char* block){
                 cerr << "Error in the sha256 calcul of the block" << endl;
             }
         }
-        // Won't hash n times the file rn but n times FROM the nb_rounds/nb_blocks ^th hash of the file (for the first loop), and so on
+        // Won't hash n times the file rn but n times FROM the nb_rounds/nb_work_by_thread ^th hash of the file (for the first loop), and so on
         else {
             if (hash_map.find(i-1) != hash_map.end()) {
 
@@ -98,7 +97,7 @@ map<int, vector<char>> consensus_evaluation(const char* block){
                 printf("Hash %d of the file : %s\n", i-1, hex_string);
                 */
 
-                if (sha256_file_fun(&previous_hash[0], sha256_hash, nb_rounds/nb_blocks, isDataIsFile) == 0) {
+                if (sha256_file_fun(&previous_hash[0], sha256_hash, nb_rounds/nb_work_by_thread, isDataIsFile) == 0) {
 
                     /*
                     // Display value of the hash in hex
