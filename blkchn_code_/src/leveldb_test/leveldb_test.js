@@ -15,7 +15,7 @@ async function main() {
         await db.close();
         await db.open();
 
-        // Récupérer la valeur associée à la clé 'a'
+        // Get the value associated to the key
         const valuea = await db.get('a');
         const valueb = await db.get('b');
         const valuec = await db.get('c');

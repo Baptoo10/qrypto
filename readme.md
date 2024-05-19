@@ -56,6 +56,16 @@ $ make gen_key_mode3
 $ ./gen_key_mode3
 ```
 
+## L'exécutable du wallet 
+```
+$ make
+$ ./run_consensus
+```
+OU
+```
+$ make run_consensus
+$ ./run_consensus
+```
 
 # Installations complètes de SQLCipher et LevelDB (inutile pour le lancement du projet qrypto) :
 
