@@ -56,7 +56,7 @@ $ make gen_key_mode3
 $ ./gen_key_mode3
 ```
 
-## L'exécutable du wallet 
+## L'exécutable du consensus 
 ```
 $ make
 $ ./run_consensus
