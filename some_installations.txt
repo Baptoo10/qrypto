@@ -1,0 +1,19 @@
+SQLCipher (SEE require a License) :
+1) wget https://github.com/sqlcipher/sqlcipher/archive/master.zip
+2) unzip master.zip
+3) cd sqlcipher-master
+4) sudo apt-get update
+5) sudo apt-get install libssl-dev
+6) ./configure --enable-tempstore=yes CFLAGS="-DSQLITE_HAS_CODEC" LDFLAGS="-lcrypto"
+7) make
+8) sudo make install DESTDIR=/
+
+LevelDB :
+1) git clone --recurse-submodules https://github.com/google/leveldb.git
+2) mkdir -p leveldb/build && cd leveldb/build
+3) cmake -DCMAKE_BUILD_TYPE=Release ..
+4) cmake --build .
+With wsl :
+5) echo 'export PATH="/mnt/VOTRE_DISQUE(d ou c)/VOTRE_PATH/leveldb/build:$PATH"' >> ~/.bashrc
+6) echo $PATH | grep -q "/mnt/VOTRE_DISQUE(d ou c)/VOTRE_PATH/leveldb/build" && echo "leveldbutil est dans PATH" || echo "leveldbutil n'est pas dans PATH"
+7) source ~/.bashrc

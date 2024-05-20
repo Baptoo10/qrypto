@@ -1,0 +1,147 @@
+Différence Dilithium3-AES vs Dilithium3-AES-R :
+Par défaut, le mode de signature de Dilithium est déterministe, pour le remplacer par le mode de signature aléatoire, il faut utiliser le projet Dilithium3-AES-R, où le "#define DILITHIUM_RANDOMIZED_SIGNING" est ajouté dans le fichier de config.h.
+S'il est ajouté, alors, dans le fichier sign.c, lors du calcul de la signature (par la fonction crypto_sign_signature() ligne 148), alors la condition "#ifdef DILITHIUM_RANDOMIZED_SIGNING" est vérifiée et donc la fonction randombytes() est exécutée (=signature aléatoire). 
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- fips202.c = (Federal Information Processing Standard) Implémentation de SHA-3 (qui est basé sur Keccak) https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- fips202x4.c = Implémentation optimisée de SHA-3 utilisant le parallélisme SIMD.
+La terminaison "x4" suggère que ce fichier peut être une version optimisée pour des opérations parallèles ou vectorielles sur des architectures SIMD (Single Instruction, Multiple Data) telles que SSE (Streaming SIMD Extensions) ou AVX (Advanced Vector Extensions), ici AVX est utilisé. Cela pourrait permettre d'accélérer les opérations de hachage en traitant plusieurs blocs de données simultanément.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- symmetric-shake.c = fonctionne grâce à Keccak et SHAKE. Permet de générer des pseudo-random octets.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- aes256ctr.c = Implémentation de AES-256 - CTR (Counter mode) optimisé à l'aide d'instructions SIMD (=pour la parallélisation, permise avec SIMD donc).
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- sign.c :
+		- crypto_sign_keypair() : Génération de la clé publique (pk) et la clé privée (sk).
+		- crypto_sign_signature() : Prend un message m, une clé secrète sk et génère la signature sig.
+		- crypto_sign() : Prend un message m, une clé secrète sk et génère un message signé sm.
+		- crypto_sign_verify() : Prend une signature sig, un message m, une clé publique pk et vérifie si la signature est valide pour le message donné et la clé publique correspondante.
+		- crypto_sign_open() : Prend un message signé sm, une clé publique pk et vérifie si le message signé est valide.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- params.h : Définit les paramètres spécifiques de dilithium utilisé dans le code (et donc ici, dans sign.c). Exemples : taille des clés, paramètres de sécurité.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- packing.c | packing.h : Ce fichier définit des fonctions pour emballer (pack) et déballer (unpack) les clés et les signatures. Les fonctions telles que pack_pk, pack_sk, pack_sig, unpack_pk, unpack_sk, et unpack_sig sont utilisées pour convertir les données entre leur représentation interne dans l'algorithme (probablement des structures de données) et une représentation externe en octets (sérialisée) pour le stockage ou la transmission. (ChatGPT)
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- polyvec.c : Implémentations de fonctions liées aux vecteurs de polynômes :
+		- expand_mat : Cette fonction implémente ExpandA, qui génère une matrice avec des coefficients uniformément choisis de manière aléatoire. Les coefficients sont obtenus en effectuant un échantillonnage de rejet sur le flux de sortie de SHAKE128(rho|j|i) ou AES256CTR(rho,j|i). Elle remplit une matrice mat avec ces polynômes.
+
+		- polyvecl_uniform_eta, polyvecl_uniform_gamma1 :
+Ces fonctions remplissent un vecteur de polynômes avec des coefficients uniformément choisis de manière aléatoire. polyvecl_uniform_eta utilise la distribution d'erreur eta tandis que polyvecl_uniform_gamma1 utilise la distribution gamma1. Ces fonctions sont utilisées pour initialiser des vecteurs avec des valeurs aléatoires.
+
+		- polyvecl_reduce, polyvecl_freeze :
+Ces fonctions effectuent des opérations de réduction et de gel (freeze) sur un vecteur de polynômes. La réduction réduit les coefficients des polynômes à des représentations standard, tandis que le gel garantit que ces polynômes sont dans une forme gelée (gelée).
+
+		- polyvecl_add, polyvecl_pointwise_acc_montgomery :
+polyvecl_add effectue l'addition de deux vecteurs de polynômes, sans réduction modulaire. polyvecl_pointwise_acc_montgomery effectue une multiplication élément par élément de deux vecteurs de polynômes et accumule le résultat, le tout dans le domaine de Montgomery.
+
+		- polyveck_uniform_eta, polyveck_reduce, polyveck_freeze :
+Ces fonctions sont similaires aux fonctions correspondantes pour les vecteurs de polynômes de longueur L, mais appliquées aux vecteurs de polynômes de longueur K.
+
+		- polyveck_add, polyveck_sub :
+Ces fonctions effectuent l'addition et la soustraction de deux vecteurs de polynômes de longueur K, sans réduction modulaire.
+
+		- polyveck_shiftl, polyveck_ntt, polyveck_invntt_tomont :
+Ces fonctions effectuent respectivement un décalage à gauche, une transformée NTT directe et une transformée NTT inverse pour un vecteur de polynômes de longueur K.
+
+		- polyveck_pointwise_poly_montgomery :
+Cette fonction effectue une multiplication élément par élément d'un vecteur de polynôme avec un polynôme, le tout dans le domaine de Montgomery.
+
+		- polyveck_chknorm :
+Cette fonction vérifie si la norme infinie de tous les polynômes dans un vecteur de polynômes de longueur K est strictement inférieure à une certaine limite.
+
+		- polyveck_power2round, polyveck_decompose :
+Ces fonctions effectuent des opérations de décomposition des coefficients des polynômes dans un vecteur de polynômes de longueur K.
+
+		- polyveck_make_hint, polyveck_use_hint :
+Ces fonctions sont utilisées pour créer un vecteur de suggestions (hints) et utiliser ce vecteur pour corriger les bits élevés d'un autre vecteur.
+
+		- polyveck_pack_w1 :
+Cette fonction emballe un vecteur de polynômes dans une représentation compacte pour le stockage ou la transmission, en utilisant la fonction polyw1_pack.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- poly.c | poly.h : Définit une structure de données appelée poly représentant un polynôme de degré N avec des coefficients entiers 32 bits. Ce fichier expose également un ensemble de fonctions pour manipuler ces polynômes, notamment des opérations telles que l'addition, la soustraction, la réduction, la normalisation, la multiplication, la conversion vers/des représentations compactes, etc.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- randombytes.c | .h : Génération aléatoire d'octets sous Windows, Linux ou sous d'autres OS.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- symmetric.h :  Def de structures et de fonctions utilisées pour la génération de flux cryptographiques (stream cipher) ainsi que pour les fonctions de hashage.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- symmetric-shake.c : Définit deux fonctions d'initialisation de flux cryptographiques (stream cipher) basées sur l'algorithme de hachage SHAKE de l'algorithme Keccak. Ces fonctions sont utilisées pour initialiser l'état d'un flux cryptographique avec un seed (graine) et un nonce spécifiques :
+		- dilithium_shake128_stream_init
+		- dilithium_shake256_stream_init 
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- ntt.h (utilise avx) : Définit des opérations liées à la transformation du domaine de la transformée de Fourier discrète (DFT) sur des polynômes de taille N avec des coefficients modulo q. NTT = Number Theoretic Transform.
+		- ntt.S : Implémentation d'une NTT en langage assembleur pour avx.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- rounding.c (utilise avx) : Implémente différentes fonctions liées à l'arrondi des éléments d'un polynôme dans un certain contexte arithmétique fini.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- rejsample.c (utilise avx) :  Probablement pour une optimisation pour l'accès mémoire et l'utilisation potentielle de SIMD.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- const.c : Définit plusieurs constantes (QINV, MONT, DIV, qdata).
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- config.h : Donne la configuration du modèle (dans notre cas, dilithium mode 3).
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- api.h : Donne l'interface déclarative pour le schéma de chiffrement Dilithium en définissant les tailles des clés et des messages, ainsi que les prototypes de fonctions nécessaires à la génération de clés, à la signature et à la vérification de signatures.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+- shuffle.inc : Définit plusieurs macros SIMD (Single Instruction, Multiple Data) pour effectuer des opérations de mélange (shuffling) sur des registres YMM (%ymm). Ces opérations de mélange sont couramment utilisées dans les instructions SIMD pour réorganiser les éléments des registres vectoriels.
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+
+
